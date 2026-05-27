@@ -7,33 +7,29 @@
 <meta name="theme-color" content="#4f46e5">
 <title>ClassCheck Pro</title>
 
-<!-- Google Fonts: Sarabun -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-<!-- Firebase compat SDK v9 compat layer -->
+<!-- Firebase compat SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-<!-- React 18 -->
+<!-- React 18 + Babel -->
 <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-<!-- Babel standalone for JSX -->
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-<!-- ===================== GLOBAL STYLES ===================== -->
 <style>
-/* ── Reset & base ── */
+/* ── Reset ── */
 *{box-sizing:border-box;margin:0;padding:0}
 html,body,#root{height:100%}
 body{
   font-family:'Sarabun','Segoe UI',system-ui,sans-serif;
   background:linear-gradient(135deg,#f0f4ff 0%,#faf9ff 50%,#f0f9f4 100%);
   background-attachment:fixed;
-  color:#1a1f2e;
-  font-size:15px;
+  color:#1a1f2e;font-size:15px;
   -webkit-font-smoothing:antialiased;
   overscroll-behavior:none;
   -webkit-tap-highlight-color:transparent;
@@ -48,68 +44,86 @@ button,input,select,textarea{font-family:inherit}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 
-/* ── Loading screen ── */
+/* ── Loading ── */
 #app-loading{
   position:fixed;inset:0;display:flex;flex-direction:column;
   align-items:center;justify-content:center;
   background:linear-gradient(135deg,#f0f4ff 0%,#faf9ff 100%);
-  z-index:9999;gap:16px
+  z-index:9999;gap:16px;
 }
 #app-loading .spinner{
-  width:40px;height:40px;border:3px solid rgba(79,70,229,.2);
+  width:44px;height:44px;border:3px solid rgba(79,70,229,.15);
   border-top-color:#4f46e5;border-radius:50%;
-  animation:spin .8s linear infinite
+  animation:spin .7s linear infinite;
 }
-#app-loading p{color:#6b7280;font-size:14px;animation:pulse 1.5s ease infinite}
+#app-loading p{color:#6b7280;font-size:14px;animation:pulse 1.4s ease infinite}
 
 /* ── Card ── */
 .card{
-  background:rgba(255,255,255,.85);
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-  border:1px solid rgba(255,255,255,.6);
+  background:rgba(255,255,255,.9);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.7);
   border-radius:16px;
-  box-shadow:0 4px 24px rgba(79,70,229,.06),0 1px 4px rgba(0,0,0,.04);
+  box-shadow:0 4px 24px rgba(79,70,229,.07),0 1px 4px rgba(0,0,0,.04);
 }
 
 /* ── Buttons ── */
 .btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
   padding:9px 18px;border-radius:10px;font-size:14px;font-weight:600;
-  cursor:pointer;border:none;transition:all .18s ease;white-space:nowrap;
-  font-family:inherit;
+  cursor:pointer;border:none;transition:all .16s ease;white-space:nowrap;
+  font-family:inherit;line-height:1.4;
 }
 .btn:active{transform:scale(.96)}
-.btn-ghost{background:rgba(255,255,255,.7);color:#374151;border:1px solid rgba(107,114,128,.2)}
-.btn-ghost:hover{background:#fff;border-color:rgba(79,70,229,.3);color:#4f46e5}
-.btn-primary{background:linear-gradient(135deg,#4f46e5,#6366f1);color:#fff;box-shadow:0 2px 12px rgba(79,70,229,.35)}
-.btn-primary:hover{background:linear-gradient(135deg,#4338ca,#4f46e5);box-shadow:0 4px 18px rgba(79,70,229,.45)}
-.btn-success{background:linear-gradient(135deg,#059669,#10b981);color:#fff;box-shadow:0 2px 12px rgba(16,185,129,.3)}
-.btn-success:hover{background:linear-gradient(135deg,#047857,#059669)}
-.btn-danger{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;box-shadow:0 2px 12px rgba(220,38,38,.25)}
-.btn-danger:hover{background:linear-gradient(135deg,#b91c1c,#dc2626)}
-.btn-sm{padding:6px 12px;font-size:13px;border-radius:8px}
-.btn-icon{padding:8px;border-radius:8px;width:36px;height:36px}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none!important}
+.btn-ghost{background:rgba(255,255,255,.75);color:#374151;border:1px solid rgba(107,114,128,.22)}
+.btn-ghost:hover:not(:disabled){background:#fff;border-color:rgba(79,70,229,.35);color:#4f46e5}
+.btn-primary{
+  background:linear-gradient(135deg,#4f46e5,#6366f1);color:#fff;
+  box-shadow:0 2px 12px rgba(79,70,229,.3);
+}
+.btn-primary:hover:not(:disabled){background:linear-gradient(135deg,#4338ca,#4f46e5);box-shadow:0 4px 18px rgba(79,70,229,.4)}
+.btn-success{background:linear-gradient(135deg,#059669,#10b981);color:#fff;box-shadow:0 2px 10px rgba(16,185,129,.25)}
+.btn-success:hover:not(:disabled){background:linear-gradient(135deg,#047857,#059669)}
+.btn-danger{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;box-shadow:0 2px 10px rgba(220,38,38,.2)}
+.btn-danger:hover:not(:disabled){background:linear-gradient(135deg,#b91c1c,#dc2626)}
+.btn-sm{padding:6px 13px;font-size:13px;border-radius:8px;gap:5px}
+.btn-icon{padding:7px;border-radius:8px;width:34px;height:34px}
 
 /* ── Form controls ── */
 .form-input{
-  width:100%;padding:10px 14px;border-radius:10px;
-  border:1.5px solid rgba(107,114,128,.18);
-  background:rgba(255,255,255,.8);color:#1a1f2e;
+  width:100%;padding:10px 13px;border-radius:10px;
+  border:1.5px solid rgba(107,114,128,.2);
+  background:rgba(255,255,255,.85);color:#1a1f2e;
   font-size:14px;font-family:inherit;
-  transition:all .15s;
+  transition:border-color .15s,box-shadow .15s,background .15s;
+  /* FIX: force native dropdown appearance on select */
+  -webkit-appearance:auto;
+  appearance:auto;
 }
 .form-input:focus{
   outline:none;border-color:#4f46e5;
-  box-shadow:0 0 0 3px rgba(79,70,229,.12);
+  box-shadow:0 0 0 3px rgba(79,70,229,.1);
   background:#fff;
 }
-.form-input::placeholder{color:#9ca3af}
-.form-label{font-size:12px;font-weight:600;color:#6b7280;letter-spacing:.04em;text-transform:uppercase;margin-bottom:5px;display:block}
+.form-input::placeholder{color:#b0b7c3}
+/* Select specific override */
+select.form-input{
+  cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 12px center;
+  padding-right:34px;
+  -webkit-appearance:none;
+  appearance:none;
+}
+.form-label{font-size:12px;font-weight:700;color:#6b7280;letter-spacing:.04em;text-transform:uppercase;margin-bottom:5px;display:block}
+.form-error{color:#dc2626;font-size:12px;margin-top:5px;display:flex;align-items:center;gap:4px}
 
-/* ── Badge / tag ── */
-.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600}
+/* ── Badge ── */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:99px;font-size:12px;font-weight:600;line-height:1.4}
 .badge-purple{background:rgba(99,102,241,.1);color:#4f46e5}
 .badge-green{background:rgba(16,185,129,.1);color:#059669}
 .badge-amber{background:rgba(245,158,11,.12);color:#d97706}
@@ -118,201 +132,200 @@ button,input,select,textarea{font-family:inherit}
 
 /* ── Stat cards ── */
 .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.stat-card{padding:14px 16px;border-radius:14px;border:1px solid rgba(255,255,255,.8)}
-.stat-card.purple{background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(99,102,241,.03))}
-.stat-card.green{background:linear-gradient(135deg,rgba(16,185,129,.08),rgba(16,185,129,.03))}
-.stat-card.amber{background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(245,158,11,.03))}
-.stat-card.red{background:linear-gradient(135deg,rgba(239,68,68,.08),rgba(239,68,68,.03))}
-.stat-label{font-size:11px;font-weight:600;color:#9ca3af;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
-.stat-value{font-size:26px;font-weight:700;line-height:1}
-.stat-value.purple{color:#4f46e5}
-.stat-value.green{color:#059669}
-.stat-value.amber{color:#d97706}
-.stat-value.red{color:#dc2626}
+.stat-card{padding:14px 16px;border-radius:14px;border:1px solid rgba(255,255,255,.9)}
+.stat-card.purple{background:linear-gradient(135deg,rgba(99,102,241,.09),rgba(99,102,241,.03))}
+.stat-card.green{background:linear-gradient(135deg,rgba(16,185,129,.09),rgba(16,185,129,.03))}
+.stat-card.amber{background:linear-gradient(135deg,rgba(245,158,11,.09),rgba(245,158,11,.03))}
+.stat-card.red{background:linear-gradient(135deg,rgba(239,68,68,.09),rgba(239,68,68,.03))}
+.stat-lbl{font-size:11px;font-weight:700;color:#9ca3af;letter-spacing:.04em;text-transform:uppercase;margin-bottom:5px}
+.stat-val{font-size:28px;font-weight:800;line-height:1}
+.stat-val.purple{color:#4f46e5}.stat-val.green{color:#059669}
+.stat-val.amber{color:#d97706}.stat-val.red{color:#dc2626}
 .stat-sub{font-size:11px;color:#9ca3af;margin-top:3px}
 
 /* ── Table ── */
-.table-wrap{overflow-x:auto;border-radius:14px;border:1px solid rgba(229,231,235,.6)}
-table.main-table{width:100%;border-collapse:collapse;font-size:14px;min-width:500px}
+.table-wrap{overflow-x:auto;border-radius:14px;border:1px solid rgba(229,231,235,.7)}
+table.main-table{width:100%;border-collapse:collapse;font-size:14px;min-width:440px}
 table.main-table thead th{
-  padding:10px 14px;font-size:11px;font-weight:700;letter-spacing:.05em;
-  text-transform:uppercase;color:#6b7280;
-  background:rgba(249,250,251,.95);
-  border-bottom:1px solid rgba(229,231,235,.7);
-  white-space:nowrap;
+  padding:10px 14px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:#6b7280;background:rgba(249,250,251,.97);
+  border-bottom:1px solid rgba(229,231,235,.8);white-space:nowrap;
 }
 table.main-table tbody td{
   padding:10px 14px;
-  border-bottom:1px solid rgba(229,231,235,.4);
-  vertical-align:middle;
-  transition:background .1s;
+  border-bottom:1px solid rgba(229,231,235,.5);
+  vertical-align:middle;transition:background .1s;
 }
 table.main-table tbody tr:last-child td{border-bottom:none}
-table.main-table tbody tr:hover td{background:rgba(99,102,241,.03)}
-table.main-table .col-center{text-align:center}
+table.main-table tbody tr:hover td{background:rgba(99,102,241,.028)}
+.col-center{text-align:center}
 
-/* ── Checkbox cell ── */
-.check-cell{display:flex;align-items:center;justify-content:center}
+/* ── Check button ── */
+.check-cell{display:flex;align-items:center;justify-content:center;gap:7px}
 .check-btn{
-  width:28px;height:28px;border-radius:7px;cursor:pointer;
+  width:30px;height:30px;border-radius:8px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  border:2px solid rgba(209,213,219,.8);
-  background:rgba(255,255,255,.6);
-  transition:all .15s ease;font-size:14px;font-weight:700;
-  flex-shrink:0;
+  border:2px solid rgba(209,213,219,.9);
+  background:rgba(255,255,255,.7);
+  transition:all .14s ease;font-size:14px;font-weight:800;
+  flex-shrink:0;user-select:none;
 }
-.check-btn:hover{border-color:#4f46e5;background:rgba(99,102,241,.06);transform:scale(1.08)}
+.check-btn:hover{border-color:#4f46e5;background:rgba(99,102,241,.07);transform:scale(1.1)}
 .check-btn.submitted{background:#4f46e5;border-color:#4f46e5;color:#fff;box-shadow:0 2px 8px rgba(79,70,229,.35)}
 .check-btn.late{background:#f59e0b;border-color:#d97706;color:#fff;box-shadow:0 2px 8px rgba(245,158,11,.3)}
-.check-btn.absent{background:rgba(239,68,68,.1);border-color:#fca5a5;color:#dc2626}
+.check-btn.absent{background:rgba(239,68,68,.12);border-color:#fca5a5;color:#dc2626}
 
 /* ── Score input ── */
 .score-inp{
-  width:64px;padding:6px 8px;border-radius:7px;
-  border:1.5px solid rgba(209,213,219,.6);
-  background:rgba(255,255,255,.7);color:#1a1f2e;
-  font-size:13px;font-weight:600;text-align:center;
-  transition:all .15s;
+  width:62px;padding:6px 8px;border-radius:7px;
+  border:1.5px solid rgba(209,213,219,.7);
+  background:rgba(255,255,255,.8);color:#1a1f2e;
+  font-size:13px;font-weight:700;text-align:center;
+  transition:all .14s;
 }
 .score-inp:focus{outline:none;border-color:#4f46e5;background:#fff;box-shadow:0 0 0 3px rgba(79,70,229,.1)}
 
-/* ── Student name cell ── */
-.stu-name{font-weight:600;color:#111827;font-size:14px}
+/* ── Student cell ── */
+.stu-name{font-weight:600;color:#111827;font-size:14px;line-height:1.4}
 .stu-no{font-size:11px;color:#9ca3af;margin-top:1px}
 
 /* ── Legend ── */
-.legend{display:flex;gap:16px;font-size:12px;color:#6b7280;flex-wrap:wrap}
-.legend-item{display:flex;align-items:center;gap:6px}
-.legend-dot{width:12px;height:12px;border-radius:3px}
+.legend{display:flex;gap:14px;font-size:12px;color:#6b7280;flex-wrap:wrap;align-items:center}
+.legend-item{display:flex;align-items:center;gap:5px}
+.legend-dot{width:11px;height:11px;border-radius:3px;flex-shrink:0}
 
-/* ── Tag chip ── */
+/* ── Chip ── */
 .tag{
   display:inline-flex;align-items:center;gap:4px;
   padding:4px 10px 4px 12px;border-radius:99px;font-size:13px;
   background:rgba(99,102,241,.08);color:#4f46e5;
   border:1px solid rgba(99,102,241,.15);
 }
-.tag-remove{background:none;border:none;cursor:pointer;color:rgba(99,102,241,.6);padding:0;display:flex;align-items:center;font-size:14px;line-height:1}
-.tag-remove:hover{color:#dc2626}
+.tag-rm{background:none;border:none;cursor:pointer;color:rgba(99,102,241,.5);padding:0;display:flex;align-items:center;font-size:13px}
+.tag-rm:hover{color:#dc2626}
 
 /* ── Modal ── */
 .modal-overlay{
-  position:fixed;inset:0;background:rgba(17,24,39,.5);
-  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
-  display:flex;align-items:center;justify-content:center;z-index:9000;
-  animation:fadeIn .2s ease;padding:16px;
+  position:fixed;inset:0;background:rgba(17,24,39,.45);
+  backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+  display:flex;align-items:center;justify-content:center;
+  z-index:9000;animation:fadeIn .18s ease;padding:16px;
 }
 .modal-box{
-  background:#fff;border-radius:20px;padding:28px;
-  max-width:440px;width:100%;
-  box-shadow:0 20px 60px rgba(0,0,0,.2);
-  animation:slideUp .25s ease;
+  background:#fff;border-radius:20px;padding:28px 28px 24px;
+  max-width:460px;width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,.18);
+  animation:slideUp .22s ease;
+  /* FIX: allow scroll if content is tall on small screens */
+  max-height:90vh;overflow-y:auto;
 }
-.modal-title{font-size:18px;font-weight:700;color:#111827;margin-bottom:20px}
-.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.modal-title{font-size:18px;font-weight:800;color:#111827;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid #f3f4f6}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid #f3f4f6}
 
-/* ── Section header ── */
-.section-hd{font-size:12px;font-weight:700;color:#6b7280;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+/* ── Tab bar ── */
+.tab-bar{display:flex;gap:4px;background:rgba(243,244,246,.85);padding:4px;border-radius:10px;margin-bottom:16px}
+.tab-item{flex:1;padding:8px 12px;border-radius:7px;font-size:13px;font-weight:600;color:#6b7280;cursor:pointer;transition:all .14s;text-align:center;border:none;background:none;font-family:inherit}
+.tab-item.active{background:#fff;color:#4f46e5;box-shadow:0 1px 5px rgba(0,0,0,.09)}
+.tab-item:hover:not(.active){color:#374151;background:rgba(255,255,255,.55)}
 
-/* ── Login screen ── */
-.login-wrap{
-  min-height:100vh;display:flex;align-items:center;justify-content:center;
-  padding:24px;
-}
+/* ── Login ── */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
 .login-card{max-width:420px;width:100%;padding:40px 36px}
-.login-logo{font-size:32px;font-weight:800;color:#4f46e5;margin-bottom:6px;display:flex;align-items:center;gap:10px}
-.login-sub{color:#6b7280;font-size:15px;margin-bottom:32px}
-.login-divider{display:flex;align-items:center;gap:12px;color:#9ca3af;font-size:13px;margin:18px 0}
+.login-logo{font-size:28px;font-weight:800;color:#4f46e5;margin-bottom:6px;display:flex;align-items:center;gap:9px}
+.login-logo svg{width:30px;height:30px}
+.login-sub{color:#6b7280;font-size:14px;margin-bottom:28px}
+.login-divider{display:flex;align-items:center;gap:12px;color:#9ca3af;font-size:13px;margin:16px 0}
 .login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:#e5e7eb}
 
 /* ── App layout ── */
-.app-wrap{display:flex;flex-direction:column;min-height:100vh}
+.app-wrap{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 
 /* ── Topbar ── */
 .topbar{
-  position:sticky;top:0;z-index:100;
+  flex-shrink:0;
   padding:0 20px;
-  background:rgba(255,255,255,.85);
-  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  border-bottom:1px solid rgba(229,231,235,.6);
-  display:flex;align-items:center;height:58px;gap:12px;
+  background:rgba(255,255,255,.88);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-bottom:1px solid rgba(229,231,235,.7);
+  display:flex;align-items:center;height:56px;gap:12px;
 }
-.topbar-logo{font-size:18px;font-weight:800;color:#4f46e5;display:flex;align-items:center;gap:7px}
-.topbar-logo svg{width:22px;height:22px}
+.topbar-logo{font-size:17px;font-weight:800;color:#4f46e5;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.topbar-logo svg{width:20px;height:20px}
 .topbar-spacer{flex:1}
+.topbar-user{font-size:13px;color:#6b7280;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* ── Sidebar ── */
 .sidebar{
-  width:260px;flex-shrink:0;
-  background:rgba(255,255,255,.7);
+  width:256px;flex-shrink:0;
+  background:rgba(255,255,255,.75);
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  border-right:1px solid rgba(229,231,235,.5);
-  padding:16px 12px;overflow-y:auto;
-  display:flex;flex-direction:column;gap:4px;
+  border-right:1px solid rgba(229,231,235,.6);
+  padding:14px 10px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:3px;
 }
 .sidebar-item{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 12px;border-radius:10px;
+  display:flex;align-items:center;gap:9px;
+  padding:9px 11px;border-radius:9px;
   font-size:14px;font-weight:500;color:#374151;
-  cursor:pointer;transition:all .15s;border:none;background:none;
+  cursor:pointer;transition:all .14s;border:none;background:none;
   text-align:left;width:100%;
 }
-.sidebar-item:hover{background:rgba(99,102,241,.06);color:#4f46e5}
-.sidebar-item.active{background:rgba(99,102,241,.1);color:#4f46e5;font-weight:600}
-.sidebar-item svg,.sidebar-item span{flex-shrink:0}
-.sidebar-section{font-size:11px;font-weight:700;color:#9ca3af;letter-spacing:.06em;text-transform:uppercase;padding:8px 12px 4px;margin-top:8px}
+.sidebar-item:hover{background:rgba(99,102,241,.07);color:#4f46e5}
+.sidebar-item.active{background:rgba(99,102,241,.11);color:#4f46e5;font-weight:700}
+.sidebar-sec{font-size:11px;font-weight:700;color:#9ca3af;letter-spacing:.07em;text-transform:uppercase;padding:8px 11px 4px;margin-top:6px}
 .sidebar-add{
-  margin:4px 4px 0;
-  border:1.5px dashed rgba(99,102,241,.3);
-  background:rgba(99,102,241,.04);
-  color:#6b7280;font-size:13px;
+  margin:3px 2px 0;
+  border:1.5px dashed rgba(99,102,241,.3)!important;
+  background:rgba(99,102,241,.03)!important;
+  color:#9ca3af!important;font-size:13px;
 }
-.sidebar-add:hover{border-color:#4f46e5;color:#4f46e5;background:rgba(99,102,241,.08)}
+.sidebar-add:hover{border-color:#4f46e5!important;color:#4f46e5!important;background:rgba(99,102,241,.07)!important}
 
-/* ── Main content ── */
+/* ── Main body ── */
 .main-body{flex:1;display:flex;overflow:hidden}
-.main-content{flex:1;overflow-y:auto;padding:24px}
+.main-content{flex:1;overflow-y:auto;padding:24px;min-width:0}
 
 /* ── Page header ── */
-.page-header{margin-bottom:20px;animation:fadeIn .3s ease}
-.page-title{font-size:22px;font-weight:800;color:#111827;display:flex;align-items:center;gap:10px}
-.page-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.page-header{margin-bottom:18px;animation:fadeIn .25s ease}
+.page-title{font-size:21px;font-weight:800;color:#111827;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.page-meta{font-size:13px;color:#6b7280;margin-top:5px}
+.page-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
 
-/* ── Checklist grid ── */
-.check-section{animation:fadeIn .3s ease}
+/* ── Progress bar ── */
+.progress-wrap{height:5px;background:rgba(229,231,235,.7);border-radius:99px;overflow:hidden;margin-top:6px}
+.progress-bar{height:100%;border-radius:99px;transition:width .5s ease;background:linear-gradient(90deg,#4f46e5,#6366f1)}
 
 /* ── Empty state ── */
 .empty-state{text-align:center;padding:60px 20px;color:#9ca3af}
-.empty-icon{font-size:48px;margin-bottom:16px;opacity:.5}
-.empty-text{font-size:16px;font-weight:600;color:#6b7280;margin-bottom:8px}
+.empty-icon{font-size:44px;margin-bottom:14px;opacity:.6}
+.empty-text{font-size:16px;font-weight:700;color:#6b7280;margin-bottom:6px}
 .empty-sub{font-size:14px}
-
-/* ── Progress bar ── */
-.progress-wrap{height:6px;background:rgba(229,231,235,.6);border-radius:99px;overflow:hidden;margin-top:6px}
-.progress-bar{height:100%;border-radius:99px;transition:width .4s ease;background:linear-gradient(90deg,#4f46e5,#6366f1)}
 
 /* ── Toast ── */
 .toast{
   position:fixed;bottom:24px;right:24px;
   background:#111827;color:#fff;
-  padding:12px 18px;border-radius:12px;font-size:14px;font-weight:500;
-  box-shadow:0 8px 30px rgba(0,0,0,.25);
-  z-index:9999;animation:slideUp .25s ease;
-  display:flex;align-items:center;gap:8px;
+  padding:11px 18px;border-radius:12px;font-size:14px;font-weight:600;
+  box-shadow:0 8px 30px rgba(0,0,0,.22);
+  z-index:9999;animation:slideUp .22s ease;
+  display:flex;align-items:center;gap:8px;max-width:320px;
 }
 
-/* ── Tab bar ── */
-.tab-bar{display:flex;gap:4px;background:rgba(243,244,246,.8);padding:4px;border-radius:10px;margin-bottom:16px}
-.tab-item{flex:1;padding:8px 14px;border-radius:7px;font-size:13px;font-weight:600;color:#6b7280;cursor:pointer;transition:all .15s;text-align:center;border:none;background:none;font-family:inherit}
-.tab-item.active{background:#fff;color:#4f46e5;box-shadow:0 1px 6px rgba(0,0,0,.08)}
-.tab-item:hover:not(.active){color:#374151;background:rgba(255,255,255,.6)}
+/* ── Error banner ── */
+.err-banner{
+  background:rgba(220,38,38,.06);color:#dc2626;
+  border:1px solid rgba(220,38,38,.18);
+  border-radius:9px;padding:9px 13px;font-size:13px;
+  display:flex;align-items:flex-start;gap:7px;
+}
 
 /* ── Responsive ── */
 @media(max-width:768px){
   .sidebar{display:none}
   .stat-grid{grid-template-columns:repeat(2,1fr)}
-  .main-content{padding:16px}
+  .main-content{padding:14px}
   .topbar{padding:0 14px}
+  .modal-box{padding:20px 18px 18px}
 }
 </style>
 </head>
@@ -324,9 +337,9 @@ table.main-table .col-center{text-align:center}
 </div>
 <div id="root"></div>
 
-<!-- ===================== FIREBASE CONFIG ===================== -->
+<!-- ═══ FIREBASE CONFIG ═══ -->
 <script>
-// ⚠️  แก้ไข firebaseConfig ด้วยค่าจาก Firebase Console ของคุณ
+// ⚠️  แก้ค่านี้ด้วยข้อมูลจาก Firebase Console > Project Settings > Your Apps
 const firebaseConfig = {
   apiKey: "AIzaSyABv4bIS3H8wj7zoy5aZPtskfSLljJyGOw",
   authDomain: "assigncheck-pro-6e559.firebaseapp.com",
@@ -335,332 +348,454 @@ const firebaseConfig = {
   messagingSenderId: "855085128789",
   appId: "1:855085128789:web:b7693a44082e617f6448dc"
 };
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-window._fb = { auth, db };
+
+try {
+  firebase.initializeApp(firebaseConfig);
+  window._fb = {
+    auth: firebase.auth(),
+    db:   firebase.firestore(),
+  };
+  // Enable offline persistence (optional but recommended)
+  window._fb.db.enablePersistence({ synchronizeTabs: true }).catch(()=>{});
+} catch(e) {
+  console.error('Firebase init error:', e);
+}
 </script>
 
-<!-- ===================== REACT APP ===================== -->
+<!-- ═══ REACT APP ═══ -->
 <script type="text/babel">
 const { useState, useEffect, useRef, useCallback } = React;
 
-/* ───── helpers ───── */
+/* ─── helpers ─── */
 function formatThaiDate(d){
   if(!d) return '';
-  const date = d instanceof Date ? d : new Date(d);
-  return date.toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+  try{
+    const date = (typeof d === 'string') ? new Date(d+'T00:00:00') : (d?.toDate ? d.toDate() : new Date(d));
+    return date.toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+  }catch(e){ return String(d); }
 }
-function today(){ return new Date().toISOString().slice(0,10); }
-function uid(){ return Math.random().toString(36).slice(2,9); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
 
-/* ───── Toast ───── */
-function Toast({msg,onDone}){
-  useEffect(()=>{ const t=setTimeout(onDone,2800); return()=>clearTimeout(t); },[]);
-  return <div className="toast">✓ {msg}</div>;
+const STATUS_ORDER = ['none','submitted','late','absent'];
+const STATUS_LABEL = {none:'ยังไม่ส่ง', submitted:'ส่งแล้ว', late:'ส่งช้า', absent:'ขาด/ไม่ส่ง'};
+const STATUS_CLS   = {none:'', submitted:'submitted', late:'late', absent:'absent'};
+const STATUS_ICON  = {none:'', submitted:'✓', late:'!', absent:'✗'};
+const YEARS        = ['2566','2567','2568','2569','2570'];
+
+/* ─── Toast ─── */
+function Toast({msg, onDone}){
+  useEffect(()=>{ const t=setTimeout(onDone,2600); return()=>clearTimeout(t); },[]);
+  return <div className="toast">✅ {msg}</div>;
 }
 
-/* ───── Confirm dialog ───── */
-function Confirm({msg,onOk,onCancel}){
+/* ─── Confirm dialog ─── */
+function Confirm({msg, onOk, onCancel}){
   return(
     <div className="modal-overlay" onClick={onCancel}>
       <div className="modal-box" style={{maxWidth:360}} onClick={e=>e.stopPropagation()}>
-        <div className="modal-title" style={{fontSize:16}}>{msg}</div>
+        <div style={{fontSize:15,fontWeight:700,color:'#111827',marginBottom:10}}>⚠️ ยืนยันการลบ</div>
+        <p style={{fontSize:14,color:'#374151',lineHeight:1.6}}>{msg}</p>
         <div className="modal-footer">
           <button className="btn btn-ghost" onClick={onCancel}>ยกเลิก</button>
-          <button className="btn btn-danger" onClick={onOk}>ยืนยัน</button>
+          <button className="btn btn-danger" onClick={onOk}>ลบ</button>
         </div>
       </div>
     </div>
   );
 }
 
-/* ═══════════════════════════════════════════════
+/* ═══════════════════════════════════
    LOGIN SCREEN
-══════════════════════════════════════════════ */
-function LoginScreen({onLogin}){
-  const [email,setEmail]=useState('');
-  const [pass,setPass]=useState('');
-  const [loading,setLoading]=useState(false);
-  const [err,setErr]=useState('');
-  const [mode,setMode]=useState('login'); // login | register
+══════════════════════════════════ */
+function LoginScreen(){
+  const [email,setEmail]   = useState('');
+  const [pass,setPass]     = useState('');
+  const [loading,setLoad]  = useState(false);
+  const [err,setErr]       = useState('');
+  const [mode,setMode]     = useState('login');
 
-  async function handleSubmit(e){
-    e.preventDefault(); setErr(''); setLoading(true);
+  const errMap = {
+    'auth/user-not-found':     'ไม่พบบัญชีนี้ในระบบ',
+    'auth/wrong-password':     'รหัสผ่านไม่ถูกต้อง',
+    'auth/invalid-credential': 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
+    'auth/email-already-in-use':'อีเมลนี้มีบัญชีอยู่แล้ว',
+    'auth/weak-password':      'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร',
+    'auth/invalid-email':      'รูปแบบอีเมลไม่ถูกต้อง',
+    'auth/too-many-requests':  'พยายามเข้าสู่ระบบหลายครั้งเกินไป กรุณารอสักครู่',
+  };
+
+  async function submit(e){
+    e.preventDefault(); setErr(''); setLoad(true);
     try{
       if(mode==='login'){
-        await window._fb.auth.signInWithEmailAndPassword(email,pass);
+        await window._fb.auth.signInWithEmailAndPassword(email, pass);
       } else {
-        await window._fb.auth.createUserWithEmailAndPassword(email,pass);
+        await window._fb.auth.createUserWithEmailAndPassword(email, pass);
       }
-    } catch(e2){
-      const map={'auth/user-not-found':'ไม่พบบัญชีนี้','auth/wrong-password':'รหัสผ่านไม่ถูกต้อง','auth/email-already-in-use':'อีเมลนี้มีบัญชีแล้ว','auth/weak-password':'รหัสผ่านต้องมีอย่างน้อย 6 ตัว','auth/invalid-email':'รูปแบบอีเมลไม่ถูกต้อง','auth/invalid-credential':'อีเมลหรือรหัสผ่านไม่ถูกต้อง'};
-      setErr(map[e2.code]||e2.message);
-    } finally{ setLoading(false); }
+    } catch(ex){ setErr(errMap[ex.code] || ex.message); }
+    finally{ setLoad(false); }
   }
 
-  async function loginGoogle(){
-    setErr(''); setLoading(true);
+  async function googleLogin(){
+    setErr(''); setLoad(true);
     try{
-      const prov=new firebase.auth.GoogleAuthProvider();
+      const prov = new firebase.auth.GoogleAuthProvider();
       await window._fb.auth.signInWithPopup(prov);
-    } catch(e2){ setErr(e2.message); } finally{ setLoading(false); }
+    } catch(ex){ setErr(errMap[ex.code] || ex.message); }
+    finally{ setLoad(false); }
   }
 
   async function resetPass(){
-    if(!email){ setErr('กรอกอีเมลก่อนแล้วกดลืมรหัส'); return; }
-    try{ await window._fb.auth.sendPasswordResetEmail(email); alert('ส่งลิงก์รีเซ็ตรหัสผ่านไปที่ '+email+' แล้ว'); }
-    catch(e2){ setErr(e2.message); }
+    if(!email){ setErr('กรุณากรอกอีเมลก่อน แล้วกด "ลืมรหัสผ่าน"'); return; }
+    try{
+      await window._fb.auth.sendPasswordResetEmail(email);
+      alert('ส่งลิงก์รีเซ็ตรหัสผ่านไปที่ ' + email + ' แล้ว');
+    } catch(ex){ setErr(errMap[ex.code] || ex.message); }
   }
 
   return(
     <div className="login-wrap">
       <div className="card login-card">
         <div className="login-logo">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+          </svg>
           ClassCheck Pro
         </div>
-        <div className="login-sub">{mode==='login'?'ยินดีต้อนรับ! เข้าสู่ระบบเพื่อจัดการงาน':'สร้างบัญชีใหม่'}</div>
+        <div className="login-sub">
+          {mode==='login' ? 'ยินดีต้อนรับ! เข้าสู่ระบบเพื่อจัดการงาน' : 'สร้างบัญชีครูใหม่'}
+        </div>
 
-        <button className="btn btn-ghost" onClick={loginGoogle} disabled={loading}
-          style={{width:'100%',marginBottom:4,padding:'10px 16px',border:'1px solid #e5e7eb',borderRadius:10}}>
-          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        {/* Google */}
+        <button className="btn btn-ghost" onClick={googleLogin} disabled={loading}
+          style={{width:'100%',padding:'10px 16px',border:'1px solid #e5e7eb',borderRadius:10,marginBottom:4}}>
+          <svg width="18" height="18" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
           เข้าสู่ระบบด้วย Google
         </button>
 
         <div className="login-divider">หรือ</div>
 
-        <form onSubmit={handleSubmit} style={{display:'flex',flexDirection:'column',gap:12}}>
+        <form onSubmit={submit} style={{display:'flex',flexDirection:'column',gap:12}}>
           <div>
             <label className="form-label">อีเมล</label>
-            <input className="form-input" type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="teacher@school.ac.th" required/>
+            <input className="form-input" type="email" value={email}
+              onChange={e=>setEmail(e.target.value)}
+              placeholder="teacher@school.ac.th" required autoComplete="email"/>
           </div>
           <div>
             <label className="form-label">รหัสผ่าน</label>
-            <input className="form-input" type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="••••••••" required minLength={6}/>
+            <input className="form-input" type="password" value={pass}
+              onChange={e=>setPass(e.target.value)}
+              placeholder="อย่างน้อย 6 ตัวอักษร" required minLength={6} autoComplete="current-password"/>
           </div>
-          {err && <div style={{color:'#dc2626',fontSize:13,background:'rgba(220,38,38,.06)',padding:'8px 12px',borderRadius:8,border:'1px solid rgba(220,38,38,.15)'}}>{err}</div>}
-          <button className="btn btn-primary" type="submit" disabled={loading} style={{width:'100%',padding:'11px'}}>
-            {loading?'กำลังดำเนินการ...':(mode==='login'?'เข้าสู่ระบบ':'สมัครสมาชิก')}
+          {err && (
+            <div className="err-banner">
+              <span>⚠️</span><span>{err}</span>
+            </div>
+          )}
+          <button className="btn btn-primary" type="submit" disabled={loading}
+            style={{width:'100%',padding:'11px',fontSize:15}}>
+            {loading ? '⏳ กำลังดำเนินการ...' : (mode==='login' ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก')}
           </button>
         </form>
 
-        <div style={{display:'flex',justifyContent:'space-between',marginTop:16,fontSize:13}}>
-          <button className="btn btn-ghost btn-sm" onClick={()=>{setMode(m=>m==='login'?'register':'login');setErr('')}}>
-            {mode==='login'?'สมัครสมาชิก':'← กลับเข้าสู่ระบบ'}
+        <div style={{display:'flex',justifyContent:'space-between',marginTop:14,gap:8}}>
+          <button className="btn btn-ghost btn-sm"
+            onClick={()=>{ setMode(m=>m==='login'?'register':'login'); setErr(''); }}>
+            {mode==='login' ? '📝 สมัครสมาชิกใหม่' : '← กลับเข้าสู่ระบบ'}
           </button>
-          {mode==='login' && <button className="btn btn-ghost btn-sm" onClick={resetPass}>ลืมรหัสผ่าน?</button>}
+          {mode==='login' &&
+            <button className="btn btn-ghost btn-sm" onClick={resetPass}>🔑 ลืมรหัสผ่าน?</button>
+          }
         </div>
       </div>
     </div>
   );
 }
 
-/* ═══════════════════════════════════════════════
-   CLASS MODAL — create/edit class
-══════════════════════════════════════════════ */
-function ClassModal({cls,onSave,onClose}){
-  const [name,setName]=useState(cls?.name||'');
-  const [subject,setSubject]=useState(cls?.subject||'');
-  const [year,setYear]=useState(cls?.year||'2568');
-  const [term,setTerm]=useState(cls?.term||'1');
-  const [teacher,setTeacher]=useState(cls?.teacher||'');
+/* ═══════════════════════════════════
+   CLASS MODAL
+   FIX: year/term เป็น <select> จริง, มีช่องครูผู้สอน, validate ก่อน save
+══════════════════════════════════ */
+function ClassModal({cls, onSave, onClose}){
+  const [name,    setName]    = useState(cls?.name    || '');
+  const [subject, setSubject] = useState(cls?.subject || '');
+  const [year,    setYear]    = useState(cls?.year    || '2568');
+  const [term,    setTerm]    = useState(String(cls?.term || '1'));
+  const [teacher, setTeacher] = useState(cls?.teacher || '');
+  const [loading, setLoad]    = useState(false);
+  const [err,     setErr]     = useState('');
 
-  function save(){
-    if(!name.trim()) return;
-    onSave({name:name.trim(),subject:subject.trim(),year,term,teacher:teacher.trim()});
+  async function save(){
+    if(!name.trim()){ setErr('กรุณากรอกชื่อชั้นเรียน'); return; }
+    setErr(''); setLoad(true);
+    try{
+      await onSave({
+        name:    name.trim(),
+        subject: subject.trim(),
+        year:    year,
+        term:    term,
+        teacher: teacher.trim(),
+      });
+    } catch(ex){
+      setErr('เกิดข้อผิดพลาด: ' + ex.message);
+    } finally { setLoad(false); }
   }
 
   return(
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box" onClick={e=>e.stopPropagation()}>
-        <div className="modal-title">{cls?'แก้ไขชั้นเรียน':'สร้างชั้นเรียนใหม่'}</div>
-        <div style={{display:'flex',flexDirection:'column',gap:12}}>
+        <div className="modal-title">
+          {cls ? '✏️ แก้ไขชั้นเรียน' : '➕ สร้างชั้นเรียนใหม่'}
+        </div>
+
+        <div style={{display:'flex',flexDirection:'column',gap:14}}>
+          {/* ชั้นเรียน */}
           <div>
-            <label className="form-label">ชั้นเรียน *</label>
-            <input className="form-input" value={name} onChange={e=>setName(e.target.value)} placeholder="เช่น ม.1/1"/>
+            <label className="form-label">ชั้นเรียน <span style={{color:'#dc2626'}}>*</span></label>
+            <input className="form-input" value={name} onChange={e=>setName(e.target.value)}
+              placeholder="เช่น ม.1/1, ม.2/3" autoFocus/>
           </div>
+
+          {/* วิชา */}
           <div>
             <label className="form-label">วิชา</label>
-            <input className="form-input" value={subject} onChange={e=>setSubject(e.target.value)} placeholder="เช่น ค21101 คณิตศาสตร์"/>
+            <input className="form-input" value={subject} onChange={e=>setSubject(e.target.value)}
+              placeholder="เช่น ค21101 คณิตศาสตร์"/>
           </div>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+
+          {/* ปีการศึกษา + ภาคเรียน */}
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
             <div>
               <label className="form-label">ปีการศึกษา</label>
-              <select className="form-input" value={year} onChange={e=>setYear(e.target.value)}>
-                {['2567','2568','2569'].map(y=><option key={y}>{y}</option>)}
+              <select className="form-input" value={year}
+                onChange={e=>{ e.stopPropagation(); setYear(e.target.value); }}>
+                {YEARS.map(y=>(
+                  <option key={y} value={y}>{y}</option>
+                ))}
               </select>
             </div>
             <div>
               <label className="form-label">ภาคเรียน</label>
-              <select className="form-input" value={term} onChange={e=>setTerm(e.target.value)}>
-                <option value="1">1</option><option value="2">2</option>
+              <select className="form-input" value={term}
+                onChange={e=>{ e.stopPropagation(); setTerm(e.target.value); }}>
+                <option value="1">ภาคเรียนที่ 1</option>
+                <option value="2">ภาคเรียนที่ 2</option>
               </select>
             </div>
           </div>
+
+          {/* ครูผู้สอน */}
           <div>
             <label className="form-label">ครูผู้สอน</label>
-            <input className="form-input" value={teacher} onChange={e=>setTeacher(e.target.value)} placeholder="ชื่อครูผู้สอน"/>
+            <input className="form-input" value={teacher} onChange={e=>setTeacher(e.target.value)}
+              placeholder="ชื่อครูผู้สอน"/>
           </div>
+
+          {err && (
+            <div className="err-banner"><span>⚠️</span><span>{err}</span></div>
+          )}
         </div>
+
         <div className="modal-footer">
-          <button className="btn btn-ghost" onClick={onClose}>ยกเลิก</button>
-          <button className="btn btn-primary" onClick={save}>บันทึก</button>
+          <button className="btn btn-ghost" onClick={onClose} disabled={loading}>ยกเลิก</button>
+          <button className="btn btn-primary" onClick={save} disabled={loading}>
+            {loading ? '⏳ กำลังบันทึก...' : '💾 บันทึก'}
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-/* ═══════════════════════════════════════════════
-   STUDENT MODAL — add students
-══════════════════════════════════════════════ */
-function StudentModal({onSave,onClose}){
-  const [mode,setMode]=useState('single');
-  const [name,setName]=useState('');
-  const [no,setNo]=useState('');
-  const [bulk,setBulk]=useState('');
+/* ═══════════════════════════════════
+   STUDENT MODAL
+══════════════════════════════════ */
+function StudentModal({onSave, onClose}){
+  const [tab,  setTab]  = useState('single');
+  const [name, setName] = useState('');
+  const [no,   setNo]   = useState('');
+  const [bulk, setBulk] = useState('');
+  const [err,  setErr]  = useState('');
+  const [load, setLoad] = useState(false);
 
-  function save(){
-    const list=[];
-    if(mode==='single'){
-      if(!name.trim()) return;
-      list.push({name:name.trim(),studentNo:no.trim()});
+  async function save(){
+    const list = [];
+    if(tab === 'single'){
+      if(!name.trim()){ setErr('กรุณากรอกชื่อนักเรียน'); return; }
+      list.push({ name: name.trim(), studentNo: no.trim() });
     } else {
       bulk.split('\n').forEach(line=>{
-        const parts=line.trim().split(/\t|,/);
-        const n=parts[0]?.trim();
-        if(n) list.push({name:n,studentNo:(parts[1]?.trim()||'')});
+        const parts = line.trim().split(/\t|,/);
+        const n = parts[0]?.trim();
+        if(n) list.push({ name: n, studentNo: (parts[1]?.trim() || '') });
       });
+      if(!list.length){ setErr('ไม่พบรายชื่อที่ใช้งานได้'); return; }
     }
-    if(list.length) onSave(list);
+    setErr(''); setLoad(true);
+    try{ await onSave(list); }
+    catch(ex){ setErr('เกิดข้อผิดพลาด: '+ex.message); setLoad(false); }
   }
 
   return(
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box" onClick={e=>e.stopPropagation()}>
-        <div className="modal-title">เพิ่มนักเรียน</div>
-        <div className="tab-bar" style={{marginBottom:16}}>
-          <button className={`tab-item${mode==='single'?' active':''}`} onClick={()=>setMode('single')}>เพิ่มทีละคน</button>
-          <button className={`tab-item${mode==='bulk'?' active':''}`} onClick={()=>setMode('bulk')}>วางรายชื่อ (หลายคน)</button>
+        <div className="modal-title">👤 เพิ่มนักเรียน</div>
+        <div className="tab-bar">
+          <button className={`tab-item${tab==='single'?' active':''}`} onClick={()=>setTab('single')}>เพิ่มทีละคน</button>
+          <button className={`tab-item${tab==='bulk'?' active':''}`} onClick={()=>setTab('bulk')}>วางรายชื่อหลายคน</button>
         </div>
-        {mode==='single'?(
-          <div style={{display:'flex',flexDirection:'column',gap:10}}>
+
+        {tab==='single' ? (
+          <div style={{display:'flex',flexDirection:'column',gap:12}}>
             <div>
-              <label className="form-label">ชื่อ-นามสกุล *</label>
-              <input className="form-input" value={name} onChange={e=>setName(e.target.value)} placeholder="เด็กชาย/เด็กหญิง ชื่อ นามสกุล"
+              <label className="form-label">ชื่อ-นามสกุล <span style={{color:'#dc2626'}}>*</span></label>
+              <input className="form-input" value={name} onChange={e=>setName(e.target.value)}
+                placeholder="เช่น เด็กชายสมชาย ใจดี" autoFocus
                 onKeyDown={e=>{ if(e.key==='Enter') save(); }}/>
             </div>
             <div>
-              <label className="form-label">เลขประจำตัว</label>
-              <input className="form-input" value={no} onChange={e=>setNo(e.target.value)} placeholder="เช่น 001"/>
+              <label className="form-label">เลขประจำตัว (ไม่บังคับ)</label>
+              <input className="form-input" value={no} onChange={e=>setNo(e.target.value)}
+                placeholder="เช่น 001"/>
             </div>
           </div>
-        ):(
+        ) : (
           <div>
-            <label className="form-label">วางรายชื่อ (1 คนต่อบรรทัด, คั่นด้วย Tab หรือ , สำหรับเลขประจำตัว)</label>
-            <textarea className="form-input" rows={7} value={bulk} onChange={e=>setBulk(e.target.value)}
-              placeholder={"เด็กชาย ตัวอย่าง ทดสอบ\nเด็กหญิง ตัวอย่าง ทดสอบ,002\nเด็กชาย ตัวอย่าง สาม\t003"}/>
+            <label className="form-label">
+              รายชื่อ — 1 คนต่อบรรทัด
+              <span style={{fontWeight:400,color:'#9ca3af',marginLeft:4}}>(คั่นด้วย Tab หรือ , เพื่อใส่เลขประจำตัว)</span>
+            </label>
+            <textarea className="form-input" rows={8} value={bulk}
+              onChange={e=>setBulk(e.target.value)} autoFocus
+              style={{resize:'vertical'}}
+              placeholder={"เด็กชายสมชาย ใจดี\nเด็กหญิงสมหญิง รักเรียน,002\nเด็กชายทดสอบ ระบบ\t003"}/>
+            <div style={{fontSize:12,color:'#9ca3af',marginTop:5}}>
+              ตัวอย่าง: <code>ชื่อ-นามสกุล,เลขประจำตัว</code> หรือ <code>ชื่อ-นามสกุล[Tab]เลขประจำตัว</code>
+            </div>
           </div>
         )}
+
+        {err && <div className="err-banner" style={{marginTop:10}}><span>⚠️</span><span>{err}</span></div>}
+
         <div className="modal-footer">
-          <button className="btn btn-ghost" onClick={onClose}>ยกเลิก</button>
-          <button className="btn btn-primary" onClick={save}>เพิ่ม</button>
+          <button className="btn btn-ghost" onClick={onClose} disabled={load}>ยกเลิก</button>
+          <button className="btn btn-primary" onClick={save} disabled={load}>
+            {load ? '⏳ กำลังเพิ่ม...' : '✅ เพิ่ม'}
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-/* ═══════════════════════════════════════════════
-   ASSIGNMENT MODAL — create assignment/check session
-══════════════════════════════════════════════ */
-function AssignmentModal({onSave,onClose}){
-  const [title,setTitle]=useState('');
-  const [date,setDate]=useState(today());
-  const [maxScore,setMaxScore]=useState('10');
-  const [topic,setTopic]=useState('');
+/* ═══════════════════════════════════
+   ASSIGNMENT MODAL
+══════════════════════════════════ */
+function AssignmentModal({onSave, onClose}){
+  const [title,    setTitle]    = useState('');
+  const [date,     setDate]     = useState(todayStr());
+  const [maxScore, setMaxScore] = useState('10');
+  const [topic,    setTopic]    = useState('');
+  const [err,      setErr]      = useState('');
+  const [load,     setLoad]     = useState(false);
 
-  function save(){
-    if(!title.trim()) return;
-    onSave({title:title.trim(),date,maxScore:Number(maxScore)||10,topic:topic.trim()});
+  async function save(){
+    if(!title.trim()){ setErr('กรุณากรอกชื่องาน'); return; }
+    setErr(''); setLoad(true);
+    try{
+      await onSave({
+        title:    title.trim(),
+        date:     date,
+        maxScore: Number(maxScore) || 10,
+        topic:    topic.trim(),
+      });
+    } catch(ex){ setErr('เกิดข้อผิดพลาด: '+ex.message); setLoad(false); }
   }
 
   return(
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box" onClick={e=>e.stopPropagation()}>
-        <div className="modal-title">สร้างงาน/กิจกรรม</div>
+        <div className="modal-title">📝 สร้างงาน / กิจกรรม</div>
         <div style={{display:'flex',flexDirection:'column',gap:12}}>
           <div>
-            <label className="form-label">ชื่องาน *</label>
-            <input className="form-input" value={title} onChange={e=>setTitle(e.target.value)} placeholder="เช่น ใบงาน 4.1, แบบฝึกหัด บทที่ 4"/>
+            <label className="form-label">ชื่องาน <span style={{color:'#dc2626'}}>*</span></label>
+            <input className="form-input" value={title} onChange={e=>setTitle(e.target.value)}
+              placeholder="เช่น ใบงาน 4.1, แบบฝึกหัดบทที่ 4" autoFocus/>
           </div>
           <div>
-            <label className="form-label">หัวข้อ/เนื้อหา</label>
-            <input className="form-input" value={topic} onChange={e=>setTopic(e.target.value)} placeholder="เช่น ทศนิยม, เศษส่วน"/>
+            <label className="form-label">หัวข้อ / เนื้อหา</label>
+            <input className="form-input" value={topic} onChange={e=>setTopic(e.target.value)}
+              placeholder="เช่น ทศนิยม, เศษส่วน"/>
           </div>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
             <div>
               <label className="form-label">วันที่มอบหมาย</label>
               <input className="form-input" type="date" value={date} onChange={e=>setDate(e.target.value)}/>
             </div>
             <div>
               <label className="form-label">คะแนนเต็ม</label>
-              <input className="form-input" type="number" value={maxScore} onChange={e=>setMaxScore(e.target.value)} min="1"/>
+              <input className="form-input" type="number" value={maxScore}
+                onChange={e=>setMaxScore(e.target.value)} min="1" max="100"/>
             </div>
           </div>
+          {err && <div className="err-banner"><span>⚠️</span><span>{err}</span></div>}
         </div>
         <div className="modal-footer">
-          <button className="btn btn-ghost" onClick={onClose}>ยกเลิก</button>
-          <button className="btn btn-primary" onClick={save}>สร้าง</button>
+          <button className="btn btn-ghost" onClick={onClose} disabled={load}>ยกเลิก</button>
+          <button className="btn btn-primary" onClick={save} disabled={load}>
+            {load ? '⏳ กำลังสร้าง...' : '✅ สร้าง'}
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-/* ═══════════════════════════════════════════════
-   CHECK TABLE — main submission grid
-══════════════════════════════════════════════ */
-const STATUS_ORDER = ['none','submitted','late','absent'];
-const STATUS_LABEL = {none:'ยังไม่ส่ง',submitted:'ส่งแล้ว',late:'ส่งช้า',absent:'ขาด'};
-const STATUS_CLASS = {none:'',submitted:'submitted',late:'late',absent:'absent'};
-const STATUS_ICON  = {none:'',submitted:'✓',late:'!',absent:'✗'};
+/* ═══════════════════════════════════
+   CHECK TABLE
+══════════════════════════════════ */
+function CheckTable({assignment, students, records, onToggle, onScore}){
+  const submitted = Object.values(records).filter(r=>r.status==='submitted').length;
+  const late      = Object.values(records).filter(r=>r.status==='late').length;
+  const absent    = Object.values(records).filter(r=>r.status==='absent').length;
+  const notYet    = students.length - submitted - late - absent;
+  const pct       = students.length ? Math.round(submitted/students.length*100) : 0;
 
-function CheckTable({assignment,students,records,onToggle,onScore}){
-  const submitted=Object.values(records).filter(r=>r.status==='submitted').length;
-  const late=Object.values(records).filter(r=>r.status==='late').length;
-  const absent=Object.values(records).filter(r=>r.status==='absent').length;
-  const total=students.length||1;
-  const pct=Math.round(submitted/total*100);
-
-  function nextStatus(cur){
-    const i=STATUS_ORDER.indexOf(cur||'none');
-    return STATUS_ORDER[(i+1)%STATUS_ORDER.length];
+  function next(cur){
+    const i = STATUS_ORDER.indexOf(cur || 'none');
+    return STATUS_ORDER[(i+1) % STATUS_ORDER.length];
   }
 
   return(
-    <div className="check-section">
+    <div style={{animation:'fadeIn .25s ease'}}>
       {/* Stats */}
       <div className="stat-grid" style={{marginBottom:16}}>
         <div className="stat-card purple card">
-          <div className="stat-label">ทั้งหมด</div>
-          <div className="stat-value purple">{students.length}</div>
+          <div className="stat-lbl">ทั้งหมด</div>
+          <div className="stat-val purple">{students.length}</div>
           <div className="stat-sub">นักเรียน</div>
         </div>
         <div className="stat-card green card">
-          <div className="stat-label">ส่งแล้ว</div>
-          <div className="stat-value green">{submitted}</div>
+          <div className="stat-lbl">ส่งแล้ว</div>
+          <div className="stat-val green">{submitted}</div>
           <div className="progress-wrap"><div className="progress-bar" style={{width:pct+'%'}}/></div>
+          <div className="stat-sub">{pct}%</div>
         </div>
         <div className="stat-card amber card">
-          <div className="stat-label">ส่งช้า</div>
-          <div className="stat-value amber">{late}</div>
+          <div className="stat-lbl">ส่งช้า</div>
+          <div className="stat-val amber">{late}</div>
           <div className="stat-sub">คน</div>
         </div>
         <div className="stat-card red card">
-          <div className="stat-label">ไม่ส่ง/ขาด</div>
-          <div className="stat-value red">{absent+Object.values(records).filter(r=>!r.status||r.status==='none').length}</div>
+          <div className="stat-lbl">ไม่ส่ง/ขาด</div>
+          <div className="stat-val red">{notYet + absent}</div>
           <div className="stat-sub">คน</div>
         </div>
       </div>
@@ -670,61 +805,70 @@ function CheckTable({assignment,students,records,onToggle,onScore}){
         {STATUS_ORDER.map(s=>(
           <div key={s} className="legend-item">
             <div className="legend-dot" style={{
-              background:s==='submitted'?'#4f46e5':s==='late'?'#f59e0b':s==='absent'?'rgba(239,68,68,.3)':'rgba(209,213,219,.6)',
-              border:s==='none'?'2px solid rgba(209,213,219,.8)':undefined
+              background: s==='submitted'?'#4f46e5' : s==='late'?'#f59e0b' : s==='absent'?'#fca5a5' : '#e5e7eb',
+              border: s==='none' ? '2px solid #d1d5db' : undefined,
             }}/>
             <span>{STATUS_LABEL[s]}</span>
           </div>
         ))}
-        <span style={{marginLeft:'auto',fontSize:12,color:'#9ca3af'}}>คลิกที่ช่องเพื่อเปลี่ยนสถานะ</span>
+        <span style={{marginLeft:'auto',fontSize:12,color:'#b0b7c3',fontStyle:'italic'}}>
+          คลิกช่องสถานะเพื่อวนเปลี่ยน
+        </span>
       </div>
 
-      {students.length===0?(
-        <div className="empty-state card" style={{padding:'40px 20px'}}>
+      {students.length === 0 ? (
+        <div className="empty-state card" style={{padding:'48px 20px'}}>
           <div className="empty-icon">👥</div>
           <div className="empty-text">ยังไม่มีนักเรียน</div>
-          <div className="empty-sub">กด "+ เพิ่มนักเรียน" ด้านบน</div>
+          <div className="empty-sub">กด "+ เพิ่มนักเรียน" ในแถบด้านบน</div>
         </div>
-      ):(
+      ) : (
         <div className="card table-wrap">
           <table className="main-table">
             <thead>
               <tr>
-                <th style={{width:44}}>#</th>
+                <th style={{width:44,textAlign:'center'}}>#</th>
                 <th>ชื่อ-นามสกุล</th>
-                <th className="col-center" style={{width:110}}>สถานะ</th>
+                <th className="col-center" style={{minWidth:130}}>สถานะการส่ง</th>
                 <th className="col-center" style={{width:80}}>คะแนน</th>
-                <th className="col-center" style={{width:80}}>/{assignment.maxScore||10}</th>
+                <th className="col-center" style={{width:60}}>เต็ม</th>
               </tr>
             </thead>
             <tbody>
               {students.map((s,i)=>{
-                const rec=records[s.id]||{};
-                const st=rec.status||'none';
+                const rec = records[s.id] || {};
+                const st  = rec.status || 'none';
                 return(
                   <tr key={s.id}>
-                    <td style={{color:'#9ca3af',fontSize:12,textAlign:'center'}}>{i+1}</td>
+                    <td style={{color:'#b0b7c3',fontSize:12,textAlign:'center'}}>{i+1}</td>
                     <td>
                       <div className="stu-name">{s.name}</div>
-                      {s.studentNo&&<div className="stu-no">เลขที่ {s.studentNo}</div>}
+                      {s.studentNo && <div className="stu-no">เลขที่ {s.studentNo}</div>}
                     </td>
                     <td className="col-center">
                       <div className="check-cell">
-                        <div className={`check-btn ${STATUS_CLASS[st]}`}
-                          onClick={()=>onToggle(s.id,nextStatus(st))}
-                          title={`${STATUS_LABEL[st]} → คลิกเพื่อเปลี่ยน`}>
+                        <div
+                          className={`check-btn ${STATUS_CLS[st]}`}
+                          onClick={()=>onToggle(s.id, next(st))}
+                          title={`${STATUS_LABEL[st]} — คลิกเพื่อเปลี่ยน`}
+                        >
                           {STATUS_ICON[st]}
                         </div>
-                        <span style={{fontSize:11,color:'#9ca3af',marginLeft:5,minWidth:44}}>{STATUS_LABEL[st]}</span>
+                        <span style={{fontSize:11,color:'#9ca3af',minWidth:52,textAlign:'left'}}>
+                          {STATUS_LABEL[st]}
+                        </span>
                       </div>
                     </td>
                     <td className="col-center">
-                      <input className="score-inp" type="number" min={0} max={assignment.maxScore||100}
-                        value={rec.score??''}
-                        onChange={e=>onScore(s.id,e.target.value)}
+                      <input className="score-inp" type="number"
+                        min={0} max={assignment.maxScore || 100}
+                        value={rec.score ?? ''}
+                        onChange={e=>onScore(s.id, e.target.value)}
                         placeholder="-"/>
                     </td>
-                    <td className="col-center" style={{fontSize:12,color:'#9ca3af'}}>/{assignment.maxScore||10}</td>
+                    <td className="col-center" style={{fontSize:12,color:'#9ca3af'}}>
+                      /{assignment.maxScore || 10}
+                    </td>
                   </tr>
                 );
               })}
@@ -736,304 +880,384 @@ function CheckTable({assignment,students,records,onToggle,onScore}){
   );
 }
 
-/* ═══════════════════════════════════════════════
+/* ═══════════════════════════════════
    PDF EXPORT
-══════════════════════════════════════════════ */
-function exportPDF(cls,assignment,students,records){
-  const sub=students.length;
-  const late=Object.values(records).filter(r=>r.status==='late').length;
-  const absent=Object.values(records).filter(r=>r.status==='absent').length;
-  const none=Object.values(records).filter(r=>!r.status||r.status==='none').length;
-  const pct=Math.round(Object.values(records).filter(r=>r.status==='submitted').length/Math.max(students.length,1)*100);
+══════════════════════════════════ */
+function exportPDF(cls, assignment, students, records){
+  if(!students.length){ alert('ยังไม่มีนักเรียน'); return; }
+  const submitted = Object.values(records).filter(r=>r.status==='submitted').length;
+  const late      = Object.values(records).filter(r=>r.status==='late').length;
+  const absent    = Object.values(records).filter(r=>r.status==='absent').length;
+  const notYet    = students.length - submitted - late - absent;
+  const pct       = Math.round(submitted / Math.max(students.length,1) * 100);
 
-  const rows=students.map((s,i)=>{
-    const rec=records[s.id]||{};
-    const st=rec.status||'none';
-    const sym=st==='submitted'?'✓':st==='late'?'!':st==='absent'?'✗':'-';
-    const bg=st==='submitted'?'#d1fae5':st==='late'?'#fef3c7':st==='absent'?'#fee2e2':'#f9fafb';
-    const col=st==='submitted'?'#065f46':st==='late'?'#92400e':st==='absent'?'#991b1b':'#9ca3af';
-    const sc=rec.score!=null&&rec.score!==''?rec.score:'-';
+  const rows = students.map((s,i)=>{
+    const rec = records[s.id] || {};
+    const st  = rec.status || 'none';
+    const sym  = st==='submitted'?'✓' : st==='late'?'!' : st==='absent'?'✗' : '–';
+    const bg   = st==='submitted'?'#d1fae5' : st==='late'?'#fef3c7' : st==='absent'?'#fee2e2' : '#f9fafb';
+    const col  = st==='submitted'?'#065f46' : st==='late'?'#92400e' : st==='absent'?'#991b1b' : '#9ca3af';
+    const sc   = (rec.score !== null && rec.score !== undefined && rec.score !== '') ? rec.score : '–';
     return `<tr>
-      <td style="text-align:center;color:#9ca3af;font-size:12px">${i+1}</td>
-      <td><strong>${s.name}</strong>${s.studentNo?`<br><span style="font-size:11px;color:#9ca3af">เลขที่ ${s.studentNo}</span>`:''}</td>
-      <td style="text-align:center;background:${bg};color:${col};font-size:17px;font-weight:700">${sym}</td>
-      <td style="text-align:center;font-size:12px;color:#9ca3af">${STATUS_LABEL[st]}</td>
-      <td style="text-align:center;font-weight:700;font-size:15px">${sc}</td>
-      <td style="text-align:center;color:#9ca3af;font-size:12px">/${assignment.maxScore||10}</td>
+      <td style="text-align:center;color:#9ca3af;font-size:12px;width:36px">${i+1}</td>
+      <td>
+        <strong style="font-size:13px">${s.name}</strong>
+        ${s.studentNo ? `<br><span style="font-size:11px;color:#9ca3af">เลขที่ ${s.studentNo}</span>` : ''}
+      </td>
+      <td style="text-align:center;background:${bg};color:${col};font-size:18px;font-weight:800;width:52px">${sym}</td>
+      <td style="text-align:center;font-size:12px;color:#6b7280;width:80px">${STATUS_LABEL[st]}</td>
+      <td style="text-align:center;font-weight:700;font-size:14px;width:56px">${sc}</td>
+      <td style="text-align:center;color:#9ca3af;font-size:12px;width:52px">/${assignment.maxScore||10}</td>
     </tr>`;
   }).join('');
 
-  const html=`<!DOCTYPE html><html lang="th"><head>
-  <meta charset="UTF-8">
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap');
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Sarabun','TH Sarabun New',sans-serif;font-size:14px;color:#111;padding:28px}
-    h1{font-size:20px;font-weight:800;color:#1a1f2e;margin-bottom:4px}
-    .meta{font-size:13px;color:#6b7280;margin-bottom:20px}
-    .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
-    .stat-box{padding:12px 14px;border-radius:12px;text-align:center}
-    .stat-box .lbl{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
-    .stat-box .val{font-size:24px;font-weight:800}
-    table{width:100%;border-collapse:collapse;font-size:13px}
-    thead th{padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#fff;background:#4f46e5;border:1px solid #4338ca;white-space:nowrap}
-    tbody td{padding:9px 12px;border:1px solid #e5e7eb}
-    tbody tr:nth-child(even) td{background:#fafafa}
-    .legend{display:flex;gap:18px;font-size:12px;color:#6b7280;margin-top:14px}
-    .legend span{display:flex;align-items:center;gap:5px}
-    .dot{width:11px;height:11px;border-radius:3px;display:inline-block}
-    .sign-row{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:44px}
-    .sign-box{text-align:center;font-size:13px}
-    .sign-line{border-top:1px solid #9ca3af;padding-top:6px;margin-top:44px}
-    @media print{body{padding:12mm} .no-print{display:none} @page{size:A4;margin:15mm}}
-  </style></head><body>
-  <div style="text-align:center;margin-bottom:18px">
-    <div style="font-size:13px;color:#6b7280">โรงเรียนหล่มสักวิทยาคม สำนักงานเขตพื้นที่การศึกษามัธยมศึกษาเพชรบูรณ์</div>
-    <h1>แบบบันทึกการส่งงาน</h1>
-    <div class="meta">
-      ${cls?.subject?`วิชา: <strong>${cls.subject}</strong> &nbsp;|&nbsp; `:''}
-      ชั้น: <strong>${cls?.name||'-'}</strong> &nbsp;|&nbsp;
-      งาน: <strong>${assignment.title}</strong>
-      ${assignment.topic?` &nbsp;|&nbsp; หัวข้อ: ${assignment.topic}`:''}
-      <br>
-      วันที่: <strong>${formatThaiDate(assignment.date)}</strong>
-      &nbsp;|&nbsp; ปีการศึกษา ${cls?.year||'-'} ภาค ${cls?.term||'-'}
-      ${cls?.teacher?` &nbsp;|&nbsp; ครูผู้สอน: ${cls.teacher}`:''}
-    </div>
+  const html = `<!DOCTYPE html><html lang="th"><head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Sarabun','TH Sarabun New',sans-serif;font-size:14px;color:#111;padding:28px}
+  .hd{text-align:center;margin-bottom:20px}
+  .hd .school{font-size:13px;color:#6b7280}
+  .hd h1{font-size:20px;font-weight:800;margin:5px 0 3px}
+  .hd .meta{font-size:13px;color:#6b7280;line-height:1.7}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+  .sbox{padding:10px 14px;border-radius:10px;text-align:center}
+  .sbox .lbl{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:3px}
+  .sbox .val{font-size:22px;font-weight:800}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{padding:8px 12px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+    color:#fff;background:#4f46e5;border:1px solid #4338ca}
+  tbody td{padding:8px 12px;border:1px solid #e5e7eb}
+  tbody tr:nth-child(even) td{background:#fafafa}
+  .legend{display:flex;gap:16px;font-size:12px;color:#6b7280;margin-top:12px;flex-wrap:wrap}
+  .signs{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:44px}
+  .sign{text-align:center;font-size:13px}
+  .sign .line{border-top:1px solid #aaa;padding-top:6px;margin-top:44px}
+  .sign .sub{color:#9ca3af;font-size:12px;margin-top:4px}
+  @media print{
+    body{padding:10mm}
+    .no-print{display:none!important}
+    @page{size:A4 portrait;margin:15mm}
+  }
+</style></head><body>
+<div class="hd">
+  <div class="school">โรงเรียนหล่มสักวิทยาคม สำนักงานเขตพื้นที่การศึกษามัธยมศึกษาเพชรบูรณ์</div>
+  <h1>แบบบันทึกการส่งงาน</h1>
+  <div class="meta">
+    ${cls?.subject ? `วิชา <strong>${cls.subject}</strong> &nbsp;|&nbsp; ` : ''}
+    ชั้น <strong>${cls?.name||'–'}</strong>
+    &nbsp;|&nbsp; งาน <strong>${assignment.title}</strong>
+    ${assignment.topic ? ` &nbsp;|&nbsp; หัวข้อ: ${assignment.topic}` : ''}
+    <br>
+    วันที่ <strong>${formatThaiDate(assignment.date)}</strong>
+    &nbsp;|&nbsp; ปีการศึกษา ${cls?.year||'–'} ภาค ${cls?.term||'–'}
+    ${cls?.teacher ? ` &nbsp;|&nbsp; ครูผู้สอน: <strong>${cls.teacher}</strong>` : ''}
   </div>
-  <div class="stat-row">
-    <div class="stat-box" style="background:#ede9fe">
-      <div class="lbl" style="color:#5b21b6">นักเรียนทั้งหมด</div>
-      <div class="val" style="color:#4f46e5">${students.length}</div>
-    </div>
-    <div class="stat-box" style="background:#d1fae5">
-      <div class="lbl" style="color:#065f46">ส่งแล้ว</div>
-      <div class="val" style="color:#059669">${Object.values(records).filter(r=>r.status==='submitted').length} <span style="font-size:14px">(${pct}%)</span></div>
-    </div>
-    <div class="stat-box" style="background:#fef3c7">
-      <div class="lbl" style="color:#92400e">ส่งช้า</div>
-      <div class="val" style="color:#d97706">${late}</div>
-    </div>
-    <div class="stat-box" style="background:#fee2e2">
-      <div class="lbl" style="color:#991b1b">ไม่ส่ง/ขาด</div>
-      <div class="val" style="color:#dc2626">${absent+none}</div>
-    </div>
-  </div>
-  <table>
-    <thead><tr>
-      <th style="width:40px">#</th>
-      <th style="text-align:left">ชื่อ-นามสกุล</th>
-      <th style="width:60px">การส่ง</th>
-      <th style="width:80px">สถานะ</th>
-      <th style="width:60px">คะแนน</th>
-      <th style="width:60px">เต็ม</th>
-    </tr></thead>
-    <tbody>${rows}</tbody>
-  </table>
-  <div class="legend">
-    <span><span class="dot" style="background:#4f46e5"></span> ✓ ส่งแล้ว</span>
-    <span><span class="dot" style="background:#f59e0b"></span> ! ส่งช้า</span>
-    <span><span class="dot" style="background:#ef4444;opacity:.4"></span> ✗ ขาด</span>
-    <span><span class="dot" style="background:#e5e7eb"></span> - ยังไม่ส่ง</span>
-    <span style="margin-left:auto">พิมพ์เมื่อ: ${new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>
-  </div>
-  <div class="sign-row">
-    <div class="sign-box">
-      <div class="sign-line">ลงชื่อ _________________________________ ครูผู้สอน</div>
-      <div style="margin-top:6px;color:#6b7280">(${cls?.teacher||'..................................'})</div>
-    </div>
-    <div class="sign-box">
-      <div class="sign-line">ลงชื่อ _________________________________ หัวหน้ากลุ่มสาระ</div>
-      <div style="margin-top:6px;color:#6b7280">(...................................)</div>
-    </div>
-  </div>
-  <div class="no-print" style="text-align:center;margin-top:30px">
-    <button onclick="window.print()" style="padding:11px 32px;background:#4f46e5;color:#fff;border:none;border-radius:10px;font-size:15px;font-family:inherit;cursor:pointer;font-weight:600">
-      🖨️ พิมพ์ / บันทึกเป็น PDF
-    </button>
-  </div>
-  </body></html>`;
+</div>
 
-  const w=window.open('','_blank');
+<div class="stats">
+  <div class="sbox" style="background:#ede9fe">
+    <div class="lbl" style="color:#5b21b6">ทั้งหมด</div>
+    <div class="val" style="color:#4f46e5">${students.length}</div>
+  </div>
+  <div class="sbox" style="background:#d1fae5">
+    <div class="lbl" style="color:#065f46">ส่งแล้ว</div>
+    <div class="val" style="color:#059669">${submitted} <span style="font-size:13px">(${pct}%)</span></div>
+  </div>
+  <div class="sbox" style="background:#fef3c7">
+    <div class="lbl" style="color:#92400e">ส่งช้า</div>
+    <div class="val" style="color:#d97706">${late}</div>
+  </div>
+  <div class="sbox" style="background:#fee2e2">
+    <div class="lbl" style="color:#991b1b">ไม่ส่ง/ขาด</div>
+    <div class="val" style="color:#dc2626">${notYet+absent}</div>
+  </div>
+</div>
+
+<table>
+  <thead><tr>
+    <th style="width:36px;text-align:center">#</th>
+    <th style="text-align:left">ชื่อ-นามสกุล</th>
+    <th style="width:52px;text-align:center">ส่ง</th>
+    <th style="width:80px;text-align:center">สถานะ</th>
+    <th style="width:56px;text-align:center">คะแนน</th>
+    <th style="width:52px;text-align:center">เต็ม</th>
+  </tr></thead>
+  <tbody>${rows}</tbody>
+</table>
+
+<div class="legend">
+  <span>✓ ส่งแล้ว (${submitted})</span>
+  <span>! ส่งช้า (${late})</span>
+  <span>✗ ขาด/ไม่ส่ง (${absent+notYet})</span>
+  <span style="margin-left:auto">พิมพ์เมื่อ: ${new Date().toLocaleString('th-TH')}</span>
+</div>
+
+<div class="signs">
+  <div class="sign">
+    <div class="line">ลงชื่อ _________________________________ ครูผู้สอน</div>
+    <div class="sub">(${cls?.teacher || '..............................'})</div>
+  </div>
+  <div class="sign">
+    <div class="line">ลงชื่อ _________________________________ หัวหน้ากลุ่มสาระ</div>
+    <div class="sub">(..............................)</div>
+  </div>
+</div>
+
+<div class="no-print" style="text-align:center;margin-top:30px">
+  <button onclick="window.print()"
+    style="padding:11px 32px;background:#4f46e5;color:#fff;border:none;border-radius:10px;font-size:15px;font-family:inherit;cursor:pointer;font-weight:700">
+    🖨️ พิมพ์ / บันทึกเป็น PDF
+  </button>
+</div>
+</body></html>`;
+
+  const w = window.open('', '_blank');
+  if(!w){ alert('กรุณาอนุญาต popup เพื่อแสดงหน้า PDF'); return; }
   w.document.write(html);
   w.document.close();
-  setTimeout(()=>w.print(),900);
+  setTimeout(()=>w.print(), 900);
 }
 
-/* ═══════════════════════════════════════════════
+/* ═══════════════════════════════════
    MAIN APP
-══════════════════════════════════════════════ */
+══════════════════════════════════ */
 function App(){
-  const [user,setUser]=useState(null);
-  const [authReady,setAuthReady]=useState(false);
-  const [classes,setClasses]=useState([]);
-  const [selectedClass,setSelectedClass]=useState(null);
-  const [assignments,setAssignments]=useState([]);
-  const [selectedAssignment,setSelectedAssignment]=useState(null);
-  const [students,setStudents]=useState([]);
-  const [records,setRecords]=useState({});
-  const [toast,setToast]=useState('');
-  const [modal,setModal]=useState(null); // 'newClass'|'editClass'|'newStudent'|'newAssignment'|'confirmDeleteClass'|'confirmDeleteAssignment'
-  const [loading,setLoading]=useState(false);
+  const [user,           setUser]          = useState(null);
+  const [authReady,      setAuthReady]     = useState(false);
+  const [classes,        setClasses]       = useState([]);
+  const [selectedCls,    setSelectedCls]   = useState(null);
+  const [assignments,    setAssignments]   = useState([]);
+  const [selectedAsgn,   setSelectedAsgn]  = useState(null);
+  const [students,       setStudents]      = useState([]);
+  const [records,        setRecords]       = useState({});
+  const [toast,          setToast]         = useState('');
+  const [modal,          setModal]         = useState(null);
+  const [appErr,         setAppErr]        = useState('');
 
-  const showToast=(msg)=>{ setToast(msg); };
+  const toast$ = (msg) => setToast(msg);
+  const closeM = () => setModal(null);
 
-  /* Auth listener */
+  /* ── Auth ── */
   useEffect(()=>{
-    const unsub=window._fb.auth.onAuthStateChanged(u=>{ setUser(u); setAuthReady(true); });
+    const unsub = window._fb.auth.onAuthStateChanged(u=>{
+      setUser(u);
+      setAuthReady(true);
+      if(!u){ setClasses([]); setSelectedCls(null); }
+    });
     return unsub;
   },[]);
 
-  /* Hide loading screen */
   useEffect(()=>{
     if(authReady) document.getElementById('app-loading').style.display='none';
   },[authReady]);
 
-  /* Load classes */
+  /* ── Classes ── */
   useEffect(()=>{
     if(!user) return;
-    const unsub=window._fb.db.collection('users').doc(user.uid).collection('classes')
-      .orderBy('createdAt','desc')
-      .onSnapshot(snap=>{
-        const list=snap.docs.map(d=>({id:d.id,...d.data()}));
-        setClasses(list);
-        if(list.length && !selectedClass) setSelectedClass(list[0]);
-      });
+    // FIX: use client-side sort to avoid needing a Firestore index on createdAt
+    const unsub = window._fb.db
+      .collection('users').doc(user.uid)
+      .collection('classes')
+      .onSnapshot(
+        snap => {
+          const list = snap.docs
+            .map(d=>({id:d.id,...d.data()}))
+            .sort((a,b)=>{
+              const ta = a.createdAt?.toMillis?.() ?? 0;
+              const tb = b.createdAt?.toMillis?.() ?? 0;
+              return tb - ta;
+            });
+          setClasses(list);
+          // Auto-select first class only if none selected
+          setSelectedCls(prev => {
+            if(prev) return list.find(c=>c.id===prev.id) || list[0] || null;
+            return list[0] || null;
+          });
+        },
+        err => { console.error('classes snapshot error:', err); setAppErr(err.message); }
+      );
     return unsub;
   },[user]);
 
-  /* Load assignments for selected class */
+  /* ── Assignments ── */
   useEffect(()=>{
-    if(!user||!selectedClass) return;
-    setAssignments([]); setSelectedAssignment(null);
-    const unsub=window._fb.db.collection('users').doc(user.uid)
-      .collection('classes').doc(selectedClass.id)
+    if(!user || !selectedCls) return;
+    setAssignments([]); setSelectedAsgn(null);
+    const unsub = window._fb.db
+      .collection('users').doc(user.uid)
+      .collection('classes').doc(selectedCls.id)
       .collection('assignments')
-      .orderBy('createdAt','desc')
-      .onSnapshot(snap=>{
-        const list=snap.docs.map(d=>({id:d.id,...d.data()}));
-        setAssignments(list);
-        if(list.length) setSelectedAssignment(list[0]);
-      });
+      .onSnapshot(
+        snap => {
+          const list = snap.docs
+            .map(d=>({id:d.id,...d.data()}))
+            .sort((a,b)=>{
+              const ta = a.createdAt?.toMillis?.() ?? 0;
+              const tb = b.createdAt?.toMillis?.() ?? 0;
+              return tb - ta;
+            });
+          setAssignments(list);
+          setSelectedAsgn(prev => prev ? (list.find(a=>a.id===prev.id)||list[0]||null) : (list[0]||null));
+        },
+        err => console.error('assignments snapshot error:', err)
+      );
     return unsub;
-  },[user,selectedClass?.id]);
+  },[user, selectedCls?.id]);
 
-  /* Load students */
+  /* ── Students ── */
   useEffect(()=>{
-    if(!user||!selectedClass) return;
-    const unsub=window._fb.db.collection('users').doc(user.uid)
-      .collection('classes').doc(selectedClass.id)
+    if(!user || !selectedCls) return;
+    setStudents([]);
+    const unsub = window._fb.db
+      .collection('users').doc(user.uid)
+      .collection('classes').doc(selectedCls.id)
       .collection('students')
-      .orderBy('order','asc')
-      .onSnapshot(snap=>{ setStudents(snap.docs.map(d=>({id:d.id,...d.data()}))); });
+      .onSnapshot(
+        snap => {
+          const list = snap.docs
+            .map(d=>({id:d.id,...d.data()}))
+            .sort((a,b)=>(a.order??999)-(b.order??999) || (a.name||'').localeCompare(b.name||'','th'));
+          setStudents(list);
+        },
+        err => console.error('students snapshot error:', err)
+      );
     return unsub;
-  },[user,selectedClass?.id]);
+  },[user, selectedCls?.id]);
 
-  /* Load records for selected assignment */
+  /* ── Records ── */
   useEffect(()=>{
-    if(!user||!selectedClass||!selectedAssignment) return;
+    if(!user || !selectedCls || !selectedAsgn) return;
     setRecords({});
-    const unsub=window._fb.db.collection('users').doc(user.uid)
-      .collection('classes').doc(selectedClass.id)
-      .collection('assignments').doc(selectedAssignment.id)
+    const unsub = window._fb.db
+      .collection('users').doc(user.uid)
+      .collection('classes').doc(selectedCls.id)
+      .collection('assignments').doc(selectedAsgn.id)
       .collection('records')
-      .onSnapshot(snap=>{
-        const map={};
-        snap.docs.forEach(d=>{ map[d.id]=d.data(); });
-        setRecords(map);
-      });
+      .onSnapshot(
+        snap => {
+          const map = {};
+          snap.docs.forEach(d=>{ map[d.id] = d.data(); });
+          setRecords(map);
+        },
+        err => console.error('records snapshot error:', err)
+      );
     return unsub;
-  },[user,selectedClass?.id,selectedAssignment?.id]);
+  },[user, selectedCls?.id, selectedAsgn?.id]);
 
-  /* ── Actions ── */
+  /* ═══ ACTIONS ═══ */
+
   async function createClass(data){
-    setModal(null);
-    const ref=window._fb.db.collection('users').doc(user.uid).collection('classes');
-    const doc=await ref.add({...data,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-    setSelectedClass({id:doc.id,...data});
-    showToast('สร้างชั้นเรียน '+data.name+' แล้ว');
+    try{
+      const ref  = window._fb.db.collection('users').doc(user.uid).collection('classes');
+      const doc  = await ref.add({ ...data, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+      closeM();
+      toast$('สร้างชั้นเรียน "'+data.name+'" แล้ว');
+      setSelectedCls({ id: doc.id, ...data });
+    } catch(ex){ throw ex; }
   }
 
   async function updateClass(data){
-    setModal(null);
-    await window._fb.db.collection('users').doc(user.uid).collection('classes').doc(selectedClass.id).update(data);
-    setSelectedClass(c=>({...c,...data}));
-    showToast('อัปเดตข้อมูลชั้นเรียนแล้ว');
+    try{
+      await window._fb.db.collection('users').doc(user.uid)
+        .collection('classes').doc(selectedCls.id).update(data);
+      closeM();
+      setSelectedCls(c=>({...c,...data}));
+      toast$('อัปเดตข้อมูลชั้นเรียนแล้ว');
+    } catch(ex){ throw ex; }
   }
 
   async function deleteClass(){
-    setModal(null);
-    await window._fb.db.collection('users').doc(user.uid).collection('classes').doc(selectedClass.id).delete();
-    setSelectedClass(null);
-    showToast('ลบชั้นเรียนแล้ว');
+    try{
+      await window._fb.db.collection('users').doc(user.uid)
+        .collection('classes').doc(selectedCls.id).delete();
+      closeM();
+      setSelectedCls(null);
+      toast$('ลบชั้นเรียนแล้ว');
+    } catch(ex){ alert('เกิดข้อผิดพลาด: '+ex.message); }
   }
 
   async function addStudents(list){
-    setModal(null);
-    const base=window._fb.db.collection('users').doc(user.uid).collection('classes').doc(selectedClass.id).collection('students');
-    const batch=window._fb.db.batch();
+    const batch = window._fb.db.batch();
+    const base  = window._fb.db.collection('users').doc(user.uid)
+      .collection('classes').doc(selectedCls.id)
+      .collection('students');
     list.forEach((s,i)=>{
-      const ref=base.doc();
-      batch.set(ref,{...s,order:students.length+i,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+      const ref = base.doc();
+      batch.set(ref, {
+        ...s,
+        order: students.length + i,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
     });
     await batch.commit();
-    showToast(`เพิ่มนักเรียน ${list.length} คนแล้ว`);
-  }
-
-  async function deleteStudent(sid){
-    await window._fb.db.collection('users').doc(user.uid).collection('classes').doc(selectedClass.id).collection('students').doc(sid).delete();
-    showToast('ลบนักเรียนแล้ว');
+    closeM();
+    toast$(`เพิ่มนักเรียน ${list.length} คนแล้ว`);
   }
 
   async function createAssignment(data){
-    setModal(null);
-    const ref=window._fb.db.collection('users').doc(user.uid).collection('classes').doc(selectedClass.id).collection('assignments');
-    const doc=await ref.add({...data,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-    setSelectedAssignment({id:doc.id,...data});
-    showToast('สร้างงาน "'+data.title+'" แล้ว');
+    try{
+      const ref = window._fb.db.collection('users').doc(user.uid)
+        .collection('classes').doc(selectedCls.id)
+        .collection('assignments');
+      const doc = await ref.add({ ...data, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+      closeM();
+      setSelectedAsgn({ id: doc.id, ...data });
+      toast$('สร้างงาน "'+data.title+'" แล้ว');
+    } catch(ex){ throw ex; }
   }
 
   async function deleteAssignment(){
-    setModal(null);
-    await window._fb.db.collection('users').doc(user.uid).collection('classes').doc(selectedClass.id).collection('assignments').doc(selectedAssignment.id).delete();
-    setSelectedAssignment(null);
-    showToast('ลบงานแล้ว');
+    try{
+      await window._fb.db.collection('users').doc(user.uid)
+        .collection('classes').doc(selectedCls.id)
+        .collection('assignments').doc(selectedAsgn.id).delete();
+      closeM();
+      setSelectedAsgn(null);
+      toast$('ลบงานแล้ว');
+    } catch(ex){ alert('เกิดข้อผิดพลาด: '+ex.message); }
   }
 
-  async function toggleStatus(studentId,newStatus){
-    const path=window._fb.db.collection('users').doc(user.uid)
-      .collection('classes').doc(selectedClass.id)
-      .collection('assignments').doc(selectedAssignment.id)
-      .collection('records').doc(studentId);
-    await path.set({status:newStatus},{ merge:true });
+  async function toggleStatus(studentId, newStatus){
+    try{
+      await window._fb.db.collection('users').doc(user.uid)
+        .collection('classes').doc(selectedCls.id)
+        .collection('assignments').doc(selectedAsgn.id)
+        .collection('records').doc(studentId)
+        .set({ status: newStatus }, { merge: true });
+    } catch(ex){ console.error('toggleStatus error:', ex); }
   }
 
-  async function setScore(studentId,score){
-    const path=window._fb.db.collection('users').doc(user.uid)
-      .collection('classes').doc(selectedClass.id)
-      .collection('assignments').doc(selectedAssignment.id)
-      .collection('records').doc(studentId);
-    await path.set({score:score===''?null:Number(score)},{merge:true});
+  async function setScore(studentId, scoreVal){
+    try{
+      await window._fb.db.collection('users').doc(user.uid)
+        .collection('classes').doc(selectedCls.id)
+        .collection('assignments').doc(selectedAsgn.id)
+        .collection('records').doc(studentId)
+        .set({ score: scoreVal === '' ? null : Number(scoreVal) }, { merge: true });
+    } catch(ex){ console.error('setScore error:', ex); }
   }
 
   async function markAll(status){
-    const batch=window._fb.db.batch();
+    if(!students.length) return;
+    const batch = window._fb.db.batch();
     students.forEach(s=>{
-      const ref=window._fb.db.collection('users').doc(user.uid)
-        .collection('classes').doc(selectedClass.id)
-        .collection('assignments').doc(selectedAssignment.id)
+      const ref = window._fb.db.collection('users').doc(user.uid)
+        .collection('classes').doc(selectedCls.id)
+        .collection('assignments').doc(selectedAsgn.id)
         .collection('records').doc(s.id);
-      batch.set(ref,{status},{merge:true});
+      batch.set(ref, { status }, { merge: true });
     });
     await batch.commit();
-    showToast(`ทำเครื่องหมาย "${STATUS_LABEL[status]}" ทุกคนแล้ว`);
+    toast$(`ทำเครื่องหมาย "${STATUS_LABEL[status]}" ทุกคนแล้ว`);
   }
 
-  function signOut(){ window._fb.auth.signOut(); }
+  const signOut = () => window._fb.auth.signOut();
 
-  /* ── Render ── */
+  /* ═══ RENDER ═══ */
   if(!authReady) return null;
-  if(!user) return <LoginScreen onLogin={()=>{}}/>;
+  if(!user)      return <LoginScreen/>;
 
   return(
     <div className="app-wrap">
@@ -1041,113 +1265,175 @@ function App(){
       <div className="topbar">
         <div className="topbar-logo">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
           </svg>
           ClassCheck Pro
         </div>
         <div className="topbar-spacer"/>
-        <span style={{fontSize:13,color:'#6b7280',maxWidth:180,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
-          {user.displayName||user.email}
-        </span>
+        <span className="topbar-user">{user.displayName||user.email}</span>
+        <button className="btn btn-ghost btn-sm" onClick={()=>setModal('newClass')}>+ ชั้นเรียน</button>
         <button className="btn btn-ghost btn-sm" onClick={signOut}>ออกจากระบบ</button>
       </div>
+
+      {appErr && (
+        <div className="err-banner" style={{margin:'8px 20px',flexShrink:0}}>
+          <span>⚠️</span><span>Firestore error: {appErr} — ตรวจสอบ Firebase Config และ Security Rules</span>
+        </div>
+      )}
 
       <div className="main-body">
         {/* Sidebar */}
         <div className="sidebar">
-          <div className="sidebar-section">ชั้นเรียน</div>
+          <div className="sidebar-sec">ชั้นเรียน ({classes.length})</div>
+
+          {classes.length === 0 && (
+            <div style={{padding:'12px 11px',fontSize:13,color:'#9ca3af'}}>ยังไม่มีชั้นเรียน</div>
+          )}
+
           {classes.map(c=>(
-            <button key={c.id} className={`sidebar-item${selectedClass?.id===c.id?' active':''}`}
-              onClick={()=>setSelectedClass(c)}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>
+            <button key={c.id}
+              className={`sidebar-item${selectedCls?.id===c.id?' active':''}`}
+              onClick={()=>setSelectedCls(c)}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <rect x="3" y="3" width="18" height="18" rx="3"/>
+                <path d="M3 9h18M9 21V9"/>
+              </svg>
               <span style={{flex:1,textAlign:'left'}}>{c.name}</span>
-              {c.subject&&<span className="badge badge-purple" style={{fontSize:10,padding:'2px 6px'}}>{c.subject.slice(0,6)}</span>}
+              {c.subject && (
+                <span className="badge badge-purple" style={{fontSize:10,padding:'2px 6px',flexShrink:0}}>
+                  {c.subject.slice(0,6)}
+                </span>
+              )}
             </button>
           ))}
+
           <button className="btn btn-ghost sidebar-item sidebar-add" onClick={()=>setModal('newClass')}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
             เพิ่มชั้นเรียน
           </button>
 
-          {selectedClass && <>
-            <div className="sidebar-section" style={{marginTop:8}}>งาน / กิจกรรม</div>
+          {selectedCls && (<>
+            <div className="sidebar-sec" style={{marginTop:8}}>
+              งาน ({assignments.length})
+            </div>
+            {assignments.length === 0 && (
+              <div style={{padding:'8px 11px',fontSize:13,color:'#9ca3af'}}>ยังไม่มีงาน</div>
+            )}
             {assignments.map(a=>(
-              <button key={a.id} className={`sidebar-item${selectedAssignment?.id===a.id?' active':''}`}
-                onClick={()=>setSelectedAssignment(a)}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <button key={a.id}
+                className={`sidebar-item${selectedAsgn?.id===a.id?' active':''}`}
+                onClick={()=>setSelectedAsgn(a)}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
                 <span style={{flex:1,textAlign:'left',fontSize:13}}>{a.title}</span>
               </button>
             ))}
             <button className="btn btn-ghost sidebar-item sidebar-add" onClick={()=>setModal('newAssignment')}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
               เพิ่มงาน
             </button>
-          </>}
+          </>)}
         </div>
 
         {/* Main content */}
         <div className="main-content">
-          {!selectedClass?(
+          {!selectedCls ? (
             <div className="empty-state" style={{paddingTop:80}}>
               <div className="empty-icon">📋</div>
               <div className="empty-text">เลือกหรือสร้างชั้นเรียน</div>
-              <div className="empty-sub">เพิ่มชั้นเรียนจากแถบเมนูด้านซ้าย</div>
-              <button className="btn btn-primary" style={{marginTop:20}} onClick={()=>setModal('newClass')}>+ สร้างชั้นเรียนแรก</button>
+              <div className="empty-sub">เพิ่มชั้นเรียนจากเมนูด้านซ้าย หรือกดปุ่มด้านล่าง</div>
+              <button className="btn btn-primary" style={{marginTop:18}}
+                onClick={()=>setModal('newClass')}>
+                + สร้างชั้นเรียนแรก
+              </button>
             </div>
-          ):(
-            <div style={{animation:'fadeIn .3s ease'}}>
+          ) : (
+            <div>
               {/* Page header */}
               <div className="page-header">
                 <div className="page-title">
-                  {selectedClass.name}
-                  {selectedClass.subject&&<span className="badge badge-purple">{selectedClass.subject}</span>}
-                  {selectedAssignment&&<span className="badge badge-gray" style={{fontWeight:500}}>{selectedAssignment.title}</span>}
+                  {selectedCls.name}
+                  {selectedCls.subject && (
+                    <span className="badge badge-purple">{selectedCls.subject}</span>
+                  )}
+                  {selectedAsgn && (
+                    <span className="badge badge-gray">{selectedAsgn.title}</span>
+                  )}
                 </div>
-                <div style={{fontSize:13,color:'#6b7280',marginTop:4}}>
-                  ปีการศึกษา {selectedClass.year} ภาค {selectedClass.term}
-                  {selectedClass.teacher&&` · ครู${selectedClass.teacher}`}
-                  {selectedAssignment?.date&&` · ${formatThaiDate(selectedAssignment.date)}`}
+                <div className="page-meta">
+                  ปีการศึกษา {selectedCls.year||'–'} ภาค {selectedCls.term||'–'}
+                  {selectedCls.teacher && ` · ครู${selectedCls.teacher}`}
+                  {selectedAsgn?.date && ` · ${formatThaiDate(selectedAsgn.date)}`}
                 </div>
                 <div className="page-actions">
-                  <button className="btn btn-ghost btn-sm" onClick={()=>setModal('newStudent')}>+ เพิ่มนักเรียน</button>
-                  {selectedAssignment&&<>
-                    <button className="btn btn-ghost btn-sm" onClick={()=>markAll('submitted')}>✓ ทำเครื่องหมายทุกคน</button>
-                    <button className="btn btn-ghost btn-sm" onClick={()=>markAll('none')}>↺ รีเซ็ตทั้งหมด</button>
-                    <button className="btn btn-success btn-sm" onClick={()=>exportPDF(selectedClass,selectedAssignment,students,records)}>
+                  <button className="btn btn-ghost btn-sm"
+                    onClick={()=>setModal('newStudent')}>
+                    👤 + เพิ่มนักเรียน
+                  </button>
+                  {selectedAsgn && (<>
+                    <button className="btn btn-ghost btn-sm"
+                      onClick={()=>markAll('submitted')}>
+                      ✓ ทำเครื่องหมายทุกคน
+                    </button>
+                    <button className="btn btn-ghost btn-sm"
+                      onClick={()=>markAll('none')}>
+                      ↺ รีเซ็ต
+                    </button>
+                    <button className="btn btn-success btn-sm"
+                      onClick={()=>exportPDF(selectedCls, selectedAsgn, students, records)}>
                       📄 ส่งออก PDF
                     </button>
-                    <button className="btn btn-ghost btn-sm" onClick={()=>setModal('editClass')}>⚙ แก้ไขชั้นเรียน</button>
-                    <button className="btn btn-ghost btn-sm" style={{color:'#dc2626'}} onClick={()=>setModal('confirmDeleteAssignment')}>🗑 ลบงานนี้</button>
-                  </>}
-                  {!selectedAssignment&&<button className="btn btn-primary btn-sm" onClick={()=>setModal('newAssignment')}>+ สร้างงานแรก</button>}
+                    <button className="btn btn-ghost btn-sm"
+                      onClick={()=>setModal('editClass')}>
+                      ⚙ แก้ไขชั้นเรียน
+                    </button>
+                    <button className="btn btn-ghost btn-sm" style={{color:'#dc2626'}}
+                      onClick={()=>setModal('confirmDeleteAsgn')}>
+                      🗑 ลบงานนี้
+                    </button>
+                  </>)}
+                  {!selectedAsgn && (
+                    <button className="btn btn-primary btn-sm"
+                      onClick={()=>setModal('newAssignment')}>
+                      + สร้างงานแรก
+                    </button>
+                  )}
                 </div>
               </div>
 
-              {/* Assignment tabs */}
-              {assignments.length>1&&(
-                <div className="tab-bar">
+              {/* Assignment tab pills */}
+              {assignments.length > 1 && (
+                <div className="tab-bar" style={{marginBottom:16}}>
                   {assignments.map(a=>(
-                    <button key={a.id} className={`tab-item${selectedAssignment?.id===a.id?' active':''}`}
-                      onClick={()=>setSelectedAssignment(a)}>
+                    <button key={a.id}
+                      className={`tab-item${selectedAsgn?.id===a.id?' active':''}`}
+                      onClick={()=>setSelectedAsgn(a)}>
                       {a.title}
                     </button>
                   ))}
                 </div>
               )}
 
-              {selectedAssignment?(
+              {selectedAsgn ? (
                 <CheckTable
-                  assignment={selectedAssignment}
+                  assignment={selectedAsgn}
                   students={students}
                   records={records}
                   onToggle={toggleStatus}
                   onScore={setScore}
                 />
-              ):(
+              ) : (
                 <div className="empty-state card" style={{marginTop:20,padding:'50px 20px'}}>
                   <div className="empty-icon">📝</div>
                   <div className="empty-text">ยังไม่มีงาน</div>
-                  <div className="empty-sub">กด "+ เพิ่มงาน" เพื่อสร้างงานหรือกิจกรรมแรก</div>
+                  <div className="empty-sub">กด "+ เพิ่มงาน" หรือ "สร้างงานแรก"</div>
                 </div>
               )}
             </div>
@@ -1155,23 +1441,27 @@ function App(){
         </div>
       </div>
 
-      {/* Modals */}
-      {modal==='newClass'&&<ClassModal onSave={createClass} onClose={()=>setModal(null)}/>}
-      {modal==='editClass'&&<ClassModal cls={selectedClass} onSave={updateClass} onClose={()=>setModal(null)}/>}
-      {modal==='newStudent'&&<StudentModal onSave={addStudents} onClose={()=>setModal(null)}/>}
-      {modal==='newAssignment'&&<AssignmentModal onSave={createAssignment} onClose={()=>setModal(null)}/>}
-      {modal==='confirmDeleteClass'&&<Confirm msg={`ลบชั้นเรียน "${selectedClass?.name}" และข้อมูลทั้งหมด?`} onOk={deleteClass} onCancel={()=>setModal(null)}/>}
-      {modal==='confirmDeleteAssignment'&&<Confirm msg={`ลบงาน "${selectedAssignment?.title}"?`} onOk={deleteAssignment} onCancel={()=>setModal(null)}/>}
+      {/* ── Modals ── */}
+      {modal==='newClass'      && <ClassModal      onSave={createClass}     onClose={closeM}/>}
+      {modal==='editClass'     && <ClassModal cls={selectedCls} onSave={updateClass} onClose={closeM}/>}
+      {modal==='newStudent'    && <StudentModal     onSave={addStudents}     onClose={closeM}/>}
+      {modal==='newAssignment' && <AssignmentModal  onSave={createAssignment} onClose={closeM}/>}
+      {modal==='confirmDeleteCls'  && (
+        <Confirm msg={`ลบชั้นเรียน "${selectedCls?.name}" และข้อมูลทั้งหมด?`}
+          onOk={deleteClass} onCancel={closeM}/>
+      )}
+      {modal==='confirmDeleteAsgn' && (
+        <Confirm msg={`ลบงาน "${selectedAsgn?.title}" และข้อมูลการส่งทั้งหมด?`}
+          onOk={deleteAssignment} onCancel={closeM}/>
+      )}
 
       {/* Toast */}
-      {toast&&<Toast msg={toast} onDone={()=>setToast('')}/>}
+      {toast && <Toast msg={toast} onDone={()=>setToast('')}/>}
     </div>
   );
 }
 
-const rootEl=document.getElementById('root');
-const reactRoot=ReactDOM.createRoot(rootEl);
-reactRoot.render(<App/>);
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
 </html>
