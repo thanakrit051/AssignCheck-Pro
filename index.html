@@ -110,6 +110,8 @@ function Ic({n,s=20,c=""}){
     mail:<><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></>,
     copy:<><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></>,
     zap:<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>,
+    edit:<><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></>,
+    trash:<><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></>,
   };
   return(<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={c}>{P[n]}</svg>);
 }
@@ -248,28 +250,102 @@ function DashboardPage({rooms,asgns,students,dk,setPage}){
 }
 
 // ── CLASSROOM ───────────────────────────────────────────────────
-function ClassroomPage({rooms,setRooms,students,dk}){
+const COLORS=["#06b6d4","#8b5cf6","#f59e0b","#10b981","#ef4444","#ec4899","#3b82f6","#f97316"];
+
+function RoomForm({initial,onSave,onCancel,dk}){
+  const[form,setForm]=useState(initial||{name:"",subject:"",color:"#06b6d4"});
+  return(
+    <div className={`rounded-2xl p-4 border space-y-3 slide-in ${dk?"bg-slate-800 border-slate-700":"bg-cyan-50 border-cyan-200"}`}>
+      <div className={`text-sm font-semibold ${dk?"text-white":"text-gray-800"}`}>{initial?"แก้ไขห้องเรียน":"เพิ่มห้องเรียนใหม่"}</div>
+      <input value={form.name} onChange={e=>setForm(p=>({...p,name:e.target.value}))} placeholder="ชื่อห้อง เช่น ม.1/4"
+        className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none ${dk?"bg-slate-700 border-slate-600 text-white placeholder-slate-500":"bg-white border-gray-200"}`}/>
+      <input value={form.subject} onChange={e=>setForm(p=>({...p,subject:e.target.value}))} placeholder="วิชา เช่น คณิตศาสตร์พื้นฐาน"
+        className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none ${dk?"bg-slate-700 border-slate-600 text-white placeholder-slate-500":"bg-white border-gray-200"}`}/>
+      <div>
+        <div className={`text-xs mb-2 ${dk?"text-slate-400":"text-gray-500"}`}>สีห้องเรียน</div>
+        <div className="flex gap-2 flex-wrap">
+          {COLORS.map(c=>(
+            <button key={c} onClick={()=>setForm(p=>({...p,color:c}))}
+              className={`w-8 h-8 rounded-full transition-all ${form.color===c?"ring-2 ring-offset-2 scale-110":"opacity-70 hover:opacity-100"} ${dk?"ring-offset-slate-800":"ring-offset-white"}`}
+              style={{background:c,ringColor:c}}/>
+          ))}
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <button onClick={()=>{if(!form.name||!form.subject)return;onSave(form);}} className="flex-1 py-2 rounded-xl bg-cyan-500 text-white text-sm font-medium active:scale-95">บันทึก</button>
+        <button onClick={onCancel} className={`flex-1 py-2 rounded-xl text-sm ${dk?"bg-slate-700 text-slate-300":"bg-gray-100 text-gray-600"}`}>ยกเลิก</button>
+      </div>
+    </div>
+  );
+}
+
+function DeleteConfirm({room,onConfirm,onCancel,dk}){
+  return(
+    <div className="fixed inset-0 z-50 flex items-end lg:items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onCancel}>
+      <div className={`w-full max-w-sm rounded-3xl p-6 ${dk?"bg-slate-800":"bg-white"} shadow-2xl slide-in`} onClick={e=>e.stopPropagation()}>
+        <div className="w-14 h-14 rounded-2xl bg-red-500/15 text-red-500 flex items-center justify-center mx-auto mb-4"><Ic n="trash" s={24}/></div>
+        <div className={`text-base font-bold text-center mb-1 ${dk?"text-white":"text-gray-900"}`}>ลบห้องเรียน?</div>
+        <div className={`text-sm text-center mb-6 ${dk?"text-slate-400":"text-gray-500"}`}>ห้อง <span className="font-semibold" style={{color:room.color}}>{room.name}</span> · {room.subject}<br/>ข้อมูลทั้งหมดจะถูกลบถาวร ไม่สามารถกู้คืนได้</div>
+        <div className="flex gap-3">
+          <button onClick={onCancel} className={`flex-1 py-3 rounded-2xl text-sm font-medium ${dk?"bg-slate-700 text-slate-300":"bg-gray-100 text-gray-600"}`}>ยกเลิก</button>
+          <button onClick={onConfirm} className="flex-1 py-3 rounded-2xl bg-red-500 text-white text-sm font-semibold active:scale-95">ลบเลย</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ClassroomPage({rooms,setRooms,students,setStudents,dk}){
   const[showAdd,setShowAdd]=useState(false);
-  const[form,setForm]=useState({name:"",subject:""});
-  const[sel,setSel]=useState(null);
+  const[editRoom,setEditRoom]=useState(null);   // room object being edited
+  const[deleteRoom,setDeleteRoom]=useState(null); // room object to confirm delete
+  const[sel,setSel]=useState(null);             // room selected to view students
   const[q,setQ]=useState("");
-  const addRoom=()=>{
-    if(!form.name||!form.subject)return;
-    const cols=["#06b6d4","#8b5cf6","#f59e0b","#10b981","#ef4444"];
-    setRooms(p=>[...p,{id:Date.now(),name:form.name,subject:form.subject,students:0,color:cols[p.length%5]}]);
-    setForm({name:"",subject:""});setShowAdd(false);toast("เพิ่มห้องเรียนสำเร็จ","success");
+
+  const addRoom=(form)=>{
+    setRooms(p=>[...p,{id:Date.now(),name:form.name,subject:form.subject,students:0,color:form.color}]);
+    setShowAdd(false);toast("เพิ่มห้องเรียนสำเร็จ ✓","success");
   };
+
+  const saveEdit=(form)=>{
+    setRooms(p=>p.map(r=>r.id===editRoom.id?{...r,name:form.name,subject:form.subject,color:form.color}:r));
+    // sync sel if currently viewing
+    if(sel&&sel.id===editRoom.id) setSel(prev=>({...prev,name:form.name,subject:form.subject,color:form.color}));
+    setEditRoom(null);toast("แก้ไขข้อมูลห้องเรียนแล้ว ✓","success");
+  };
+
+  const confirmDelete=()=>{
+    setRooms(p=>p.filter(r=>r.id!==deleteRoom.id));
+    setStudents(prev=>{const n={...prev};delete n[deleteRoom.id];return n;});
+    if(sel&&sel.id===deleteRoom.id) setSel(null);
+    toast(`ลบห้อง ${deleteRoom.name} แล้ว`,"error");
+    setDeleteRoom(null);
+  };
+
+  // ── Student detail view ──
   if(sel){
+    const currentRoom=rooms.find(r=>r.id===sel.id)||sel;
     const st=(students[sel.id]||[]).filter(s=>q===""||s.name.includes(q)||String(s.no).includes(q));
     return(<div className="p-4 space-y-4 pb-24 lg:pb-6">
+      {deleteRoom&&<DeleteConfirm room={deleteRoom} onConfirm={confirmDelete} onCancel={()=>setDeleteRoom(null)} dk={dk}/>}
       <div className="flex items-center gap-3">
-        <button onClick={()=>{setSel(null);setQ("");}} className={`w-9 h-9 rounded-xl flex items-center justify-center ${dk?"bg-slate-800 text-slate-400":"bg-gray-100 text-gray-600"}`}><Ic n="arr" s={18} c="rotate-180"/></button>
-        <div><div className={`font-bold ${dk?"text-white":"text-gray-900"}`}>{sel.name}</div><div className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>{sel.subject} · {sel.students} คน</div></div>
+        <button onClick={()=>{setSel(null);setQ("");}} className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${dk?"bg-slate-800 text-slate-400":"bg-gray-100 text-gray-600"}`}><Ic n="arr" s={18} c="rotate-180"/></button>
+        <div className="flex-1 min-w-0">
+          <div className={`font-bold truncate ${dk?"text-white":"text-gray-900"}`}>{currentRoom.name}</div>
+          <div className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>{currentRoom.subject} · {currentRoom.students} คน</div>
+        </div>
+        {/* edit & delete buttons in student view */}
+        <button onClick={()=>setEditRoom(currentRoom)} className={`w-9 h-9 rounded-xl flex items-center justify-center ${dk?"bg-slate-800 text-slate-400 hover:text-cyan-400":"bg-gray-100 text-gray-500 hover:text-cyan-600"}`}><Ic n="edit" s={16}/></button>
+        <button onClick={()=>setDeleteRoom(currentRoom)} className={`w-9 h-9 rounded-xl flex items-center justify-center ${dk?"bg-slate-800 text-slate-400 hover:text-red-400":"bg-gray-100 text-gray-500 hover:text-red-500"}`}><Ic n="trash" s={16}/></button>
       </div>
+
+      {editRoom&&<RoomForm initial={{name:editRoom.name,subject:editRoom.subject,color:editRoom.color}} onSave={saveEdit} onCancel={()=>setEditRoom(null)} dk={dk}/>}
+
       <div className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border ${dk?"bg-slate-800 border-slate-700":"bg-gray-50 border-gray-200"}`}>
         <Ic n="search" s={16} c={dk?"text-slate-500":"text-gray-400"}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="ค้นหานักเรียน..." className={`flex-1 bg-transparent text-sm outline-none ${dk?"text-white placeholder-slate-500":"text-gray-900 placeholder-gray-400"}`}/>
       </div>
       <div className="space-y-2">
+        {st.length===0&&<div className={`text-center py-10 text-sm ${dk?"text-slate-500":"text-gray-400"}`}>ไม่พบนักเรียน</div>}
         {st.map(s=>(<div key={s.id} className={`flex items-center gap-3 p-3 rounded-xl border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center text-white text-xs font-bold">{s.no}</div>
           <div className="flex-1 min-w-0"><div className={`text-sm font-medium truncate ${dk?"text-white":"text-gray-900"}`}>{s.name}</div><div className={`text-xs ${dk?"text-slate-500":"text-gray-400"}`}>เลขที่ {s.no}</div></div>
@@ -278,34 +354,69 @@ function ClassroomPage({rooms,setRooms,students,dk}){
       </div>
     </div>);
   }
+
+  // ── Room list view ──
   return(<div className="p-4 space-y-4 pb-24 lg:pb-6">
+    {deleteRoom&&<DeleteConfirm room={deleteRoom} onConfirm={confirmDelete} onCancel={()=>setDeleteRoom(null)} dk={dk}/>}
+
     <div className="flex items-center justify-between">
       <p className={`text-sm ${dk?"text-slate-400":"text-gray-500"}`}>{rooms.length} ห้องเรียน</p>
-      <button onClick={()=>setShowAdd(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500 text-white text-sm font-medium shadow-lg shadow-cyan-500/30 active:scale-95"><Ic n="plus" s={16}/> เพิ่มห้อง</button>
+      <button onClick={()=>{setShowAdd(true);setEditRoom(null);}} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500 text-white text-sm font-medium shadow-lg shadow-cyan-500/30 active:scale-95"><Ic n="plus" s={16}/> เพิ่มห้อง</button>
     </div>
-    {showAdd&&(<div className={`rounded-2xl p-4 border space-y-3 ${dk?"bg-slate-800 border-slate-700":"bg-cyan-50 border-cyan-200"}`}>
-      <div className={`text-sm font-semibold ${dk?"text-white":"text-gray-800"}`}>เพิ่มห้องเรียนใหม่</div>
-      <input value={form.name} onChange={e=>setForm(p=>({...p,name:e.target.value}))} placeholder="ชื่อห้อง เช่น ม.1/4" className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none ${dk?"bg-slate-700 border-slate-600 text-white placeholder-slate-500":"bg-white border-gray-200"}`}/>
-      <input value={form.subject} onChange={e=>setForm(p=>({...p,subject:e.target.value}))} placeholder="วิชา เช่น คณิตศาสตร์" className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none ${dk?"bg-slate-700 border-slate-600 text-white placeholder-slate-500":"bg-white border-gray-200"}`}/>
-      <div className="flex gap-2"><button onClick={addRoom} className="flex-1 py-2 rounded-xl bg-cyan-500 text-white text-sm">บันทึก</button><button onClick={()=>setShowAdd(false)} className={`flex-1 py-2 rounded-xl text-sm ${dk?"bg-slate-700 text-slate-300":"bg-gray-100 text-gray-600"}`}>ยกเลิก</button></div>
-    </div>)}
+
+    {showAdd&&!editRoom&&<RoomForm onSave={addRoom} onCancel={()=>setShowAdd(false)} dk={dk}/>}
+
     <div className="space-y-3">
       {rooms.map(r=>{
-        const st=students[r.id]||[];const rt=st.length?Math.round((st.filter(s=>s.status!=="not_submitted").length/st.length)*100):0;
-        return(<div key={r.id} onClick={()=>setSel(r)} className={`rounded-2xl p-4 border cursor-pointer active:scale-[0.99] ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-xs" style={{background:r.color}}>{r.name}</div>
-            <div className="flex-1"><div className={`font-semibold ${dk?"text-white":"text-gray-900"}`}>{r.subject}</div><div className={`text-xs mt-0.5 ${dk?"text-slate-400":"text-gray-500"}`}>{r.students} คน</div></div>
-            <div className="text-right"><div className={`text-lg font-bold ${rt>=80?"text-emerald-500":rt>=60?"text-amber-500":"text-red-500"}`}>{rt}%</div><div className={`text-xs ${dk?"text-slate-500":"text-gray-400"}`}>ส่งงาน</div></div>
-          </div>
-          <div className={`h-2 rounded-full ${dk?"bg-slate-700":"bg-gray-100"} overflow-hidden`}><div className="h-full rounded-full" style={{width:`${rt}%`,background:r.color}}/></div>
-          <div className="flex gap-3 mt-3">
-            {[{l:"ส่งแล้ว",v:st.filter(s=>s.status==="submitted").length,c:"#10b981"},{l:"ส่งช้า",v:st.filter(s=>s.status==="late").length,c:"#f59e0b"},{l:"ไม่ส่ง",v:st.filter(s=>s.status==="not_submitted").length,c:"#ef4444"}].map(i=>(
-              <div key={i.l} className="flex items-center gap-1"><div className="w-2 h-2 rounded-full" style={{background:i.c}}/><span className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>{i.l} {i.v}</span></div>
-            ))}
+        const st=students[r.id]||[];
+        const rt=st.length?Math.round((st.filter(s=>s.status!=="not_submitted").length/st.length)*100):0;
+        const isEditing=editRoom?.id===r.id&&!showAdd;
+        return(<div key={r.id}>
+          {/* Edit form inline */}
+          {isEditing&&<RoomForm initial={{name:r.name,subject:r.subject,color:r.color}} onSave={saveEdit} onCancel={()=>setEditRoom(null)} dk={dk}/>}
+
+          <div className={`rounded-2xl p-4 border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}
+            style={isEditing?{opacity:0.4,pointerEvents:"none"}:{}}>
+            <div className="flex items-center gap-3 mb-3">
+              {/* color badge → click to view students */}
+              <div onClick={()=>setSel(r)} className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-xs cursor-pointer flex-shrink-0" style={{background:r.color}}>{r.name}</div>
+              <div className="flex-1 min-w-0 cursor-pointer" onClick={()=>setSel(r)}>
+                <div className={`font-semibold truncate ${dk?"text-white":"text-gray-900"}`}>{r.subject}</div>
+                <div className={`text-xs mt-0.5 ${dk?"text-slate-400":"text-gray-500"}`}>{r.students} คน</div>
+              </div>
+              {/* action buttons */}
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <div className="text-right mr-2">
+                  <div className={`text-base font-bold ${rt>=80?"text-emerald-500":rt>=60?"text-amber-500":"text-red-500"}`}>{rt}%</div>
+                  <div className={`text-[10px] ${dk?"text-slate-500":"text-gray-400"}`}>ส่งงาน</div>
+                </div>
+                <button onClick={e=>{e.stopPropagation();setEditRoom(r);setShowAdd(false);}}
+                  className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${dk?"bg-slate-700 text-slate-400 hover:text-cyan-400":"bg-gray-100 text-gray-400 hover:text-cyan-600"}`}>
+                  <Ic n="edit" s={15}/>
+                </button>
+                <button onClick={e=>{e.stopPropagation();setDeleteRoom(r);}}
+                  className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${dk?"bg-slate-700 text-slate-400 hover:text-red-400":"bg-gray-100 text-gray-400 hover:text-red-500"}`}>
+                  <Ic n="trash" s={15}/>
+                </button>
+              </div>
+            </div>
+            <div className={`h-2 rounded-full ${dk?"bg-slate-700":"bg-gray-100"} overflow-hidden`}>
+              <div className="h-full rounded-full transition-all" style={{width:`${rt}%`,background:r.color}}/>
+            </div>
+            <div className="flex gap-3 mt-3">
+              {[{l:"ส่งแล้ว",v:st.filter(s=>s.status==="submitted").length,c:"#10b981"},{l:"ส่งช้า",v:st.filter(s=>s.status==="late").length,c:"#f59e0b"},{l:"ไม่ส่ง",v:st.filter(s=>s.status==="not_submitted").length,c:"#ef4444"}].map(i=>(
+                <div key={i.l} className="flex items-center gap-1"><div className="w-2 h-2 rounded-full" style={{background:i.c}}/><span className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>{i.l} {i.v}</span></div>
+              ))}
+            </div>
           </div>
         </div>);
       })}
+      {rooms.length===0&&(
+        <div className={`text-center py-16 ${dk?"text-slate-500":"text-gray-400"}`}>
+          <div className="text-5xl mb-3 opacity-30">🏫</div>
+          <p className="text-sm">ยังไม่มีห้องเรียน กด "เพิ่มห้อง" เพื่อเริ่มต้น</p>
+        </div>
+      )}
     </div>
   </div>);
 }
@@ -595,7 +706,7 @@ function App(){
   const titles={dashboard:"Dashboard",classroom:"ห้องเรียน",assignment:"เช็คงาน",reports:"รายงาน",share:"แชร์ & ส่งออก",settings:"ตั้งค่า"};
   const pages={
     dashboard:<DashboardPage rooms={rooms} asgns={asgns} students={students} dk={dk} setPage={setPage}/>,
-    classroom:<ClassroomPage rooms={rooms} setRooms={setRooms} students={students} dk={dk}/>,
+    classroom:<ClassroomPage rooms={rooms} setRooms={setRooms} students={students} setStudents={setStudents} dk={dk}/>,
     assignment:<AssignmentPage rooms={rooms} asgns={asgns} setAsgns={setAsgns} students={students} setStudents={setStudents} dk={dk} fabTrigger={fabTrigger}/>,
     reports:<ReportsPage rooms={rooms} students={students} asgns={asgns} dk={dk}/>,
     share:<SharePage rooms={rooms} students={students} dk={dk}/>,
