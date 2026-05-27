@@ -1,732 +1,1177 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<title>AssignCheck Pro</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#4f46e5">
+<title>ClassCheck Pro</title>
+
+<!-- Google Fonts: Sarabun -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Firebase compat SDK v9 compat layer -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<!-- React 18 -->
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<!-- Babel standalone for JSX -->
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-tailwind.config = {
-  darkMode: 'class',
-  theme: { extend: { fontFamily: { sans: ['Prompt','sans-serif'] } } }
-}
-</script>
+
+<!-- ===================== GLOBAL STYLES ===================== -->
 <style>
-* { -webkit-tap-highlight-color: transparent; font-family: 'Prompt', sans-serif; }
-body { margin: 0; overflow: hidden; }
-input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
-select { -webkit-appearance: none; }
-@keyframes slide-in { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
-.slide-in { animation: slide-in 0.25s ease; }
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
-.dark ::-webkit-scrollbar-thumb { background: #334155; }
+/* ── Reset & base ── */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body,#root{height:100%}
+body{
+  font-family:'Sarabun','Segoe UI',system-ui,sans-serif;
+  background:linear-gradient(135deg,#f0f4ff 0%,#faf9ff 50%,#f0f9f4 100%);
+  background-attachment:fixed;
+  color:#1a1f2e;
+  font-size:15px;
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior:none;
+  -webkit-tap-highlight-color:transparent;
+}
+button,input,select,textarea{font-family:inherit}
+*::-webkit-scrollbar{width:5px;height:5px}
+*::-webkit-scrollbar-thumb{background:rgba(79,70,229,.25);border-radius:99px}
+*::-webkit-scrollbar-track{background:transparent}
+
+/* ── Animations ── */
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* ── Loading screen ── */
+#app-loading{
+  position:fixed;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#f0f4ff 0%,#faf9ff 100%);
+  z-index:9999;gap:16px
+}
+#app-loading .spinner{
+  width:40px;height:40px;border:3px solid rgba(79,70,229,.2);
+  border-top-color:#4f46e5;border-radius:50%;
+  animation:spin .8s linear infinite
+}
+#app-loading p{color:#6b7280;font-size:14px;animation:pulse 1.5s ease infinite}
+
+/* ── Card ── */
+.card{
+  background:rgba(255,255,255,.85);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.6);
+  border-radius:16px;
+  box-shadow:0 4px 24px rgba(79,70,229,.06),0 1px 4px rgba(0,0,0,.04);
+}
+
+/* ── Buttons ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  padding:9px 18px;border-radius:10px;font-size:14px;font-weight:600;
+  cursor:pointer;border:none;transition:all .18s ease;white-space:nowrap;
+  font-family:inherit;
+}
+.btn:active{transform:scale(.96)}
+.btn-ghost{background:rgba(255,255,255,.7);color:#374151;border:1px solid rgba(107,114,128,.2)}
+.btn-ghost:hover{background:#fff;border-color:rgba(79,70,229,.3);color:#4f46e5}
+.btn-primary{background:linear-gradient(135deg,#4f46e5,#6366f1);color:#fff;box-shadow:0 2px 12px rgba(79,70,229,.35)}
+.btn-primary:hover{background:linear-gradient(135deg,#4338ca,#4f46e5);box-shadow:0 4px 18px rgba(79,70,229,.45)}
+.btn-success{background:linear-gradient(135deg,#059669,#10b981);color:#fff;box-shadow:0 2px 12px rgba(16,185,129,.3)}
+.btn-success:hover{background:linear-gradient(135deg,#047857,#059669)}
+.btn-danger{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;box-shadow:0 2px 12px rgba(220,38,38,.25)}
+.btn-danger:hover{background:linear-gradient(135deg,#b91c1c,#dc2626)}
+.btn-sm{padding:6px 12px;font-size:13px;border-radius:8px}
+.btn-icon{padding:8px;border-radius:8px;width:36px;height:36px}
+
+/* ── Form controls ── */
+.form-input{
+  width:100%;padding:10px 14px;border-radius:10px;
+  border:1.5px solid rgba(107,114,128,.18);
+  background:rgba(255,255,255,.8);color:#1a1f2e;
+  font-size:14px;font-family:inherit;
+  transition:all .15s;
+}
+.form-input:focus{
+  outline:none;border-color:#4f46e5;
+  box-shadow:0 0 0 3px rgba(79,70,229,.12);
+  background:#fff;
+}
+.form-input::placeholder{color:#9ca3af}
+.form-label{font-size:12px;font-weight:600;color:#6b7280;letter-spacing:.04em;text-transform:uppercase;margin-bottom:5px;display:block}
+
+/* ── Badge / tag ── */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600}
+.badge-purple{background:rgba(99,102,241,.1);color:#4f46e5}
+.badge-green{background:rgba(16,185,129,.1);color:#059669}
+.badge-amber{background:rgba(245,158,11,.12);color:#d97706}
+.badge-red{background:rgba(239,68,68,.1);color:#dc2626}
+.badge-gray{background:rgba(107,114,128,.1);color:#6b7280}
+
+/* ── Stat cards ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat-card{padding:14px 16px;border-radius:14px;border:1px solid rgba(255,255,255,.8)}
+.stat-card.purple{background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(99,102,241,.03))}
+.stat-card.green{background:linear-gradient(135deg,rgba(16,185,129,.08),rgba(16,185,129,.03))}
+.stat-card.amber{background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(245,158,11,.03))}
+.stat-card.red{background:linear-gradient(135deg,rgba(239,68,68,.08),rgba(239,68,68,.03))}
+.stat-label{font-size:11px;font-weight:600;color:#9ca3af;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+.stat-value{font-size:26px;font-weight:700;line-height:1}
+.stat-value.purple{color:#4f46e5}
+.stat-value.green{color:#059669}
+.stat-value.amber{color:#d97706}
+.stat-value.red{color:#dc2626}
+.stat-sub{font-size:11px;color:#9ca3af;margin-top:3px}
+
+/* ── Table ── */
+.table-wrap{overflow-x:auto;border-radius:14px;border:1px solid rgba(229,231,235,.6)}
+table.main-table{width:100%;border-collapse:collapse;font-size:14px;min-width:500px}
+table.main-table thead th{
+  padding:10px 14px;font-size:11px;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;color:#6b7280;
+  background:rgba(249,250,251,.95);
+  border-bottom:1px solid rgba(229,231,235,.7);
+  white-space:nowrap;
+}
+table.main-table tbody td{
+  padding:10px 14px;
+  border-bottom:1px solid rgba(229,231,235,.4);
+  vertical-align:middle;
+  transition:background .1s;
+}
+table.main-table tbody tr:last-child td{border-bottom:none}
+table.main-table tbody tr:hover td{background:rgba(99,102,241,.03)}
+table.main-table .col-center{text-align:center}
+
+/* ── Checkbox cell ── */
+.check-cell{display:flex;align-items:center;justify-content:center}
+.check-btn{
+  width:28px;height:28px;border-radius:7px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid rgba(209,213,219,.8);
+  background:rgba(255,255,255,.6);
+  transition:all .15s ease;font-size:14px;font-weight:700;
+  flex-shrink:0;
+}
+.check-btn:hover{border-color:#4f46e5;background:rgba(99,102,241,.06);transform:scale(1.08)}
+.check-btn.submitted{background:#4f46e5;border-color:#4f46e5;color:#fff;box-shadow:0 2px 8px rgba(79,70,229,.35)}
+.check-btn.late{background:#f59e0b;border-color:#d97706;color:#fff;box-shadow:0 2px 8px rgba(245,158,11,.3)}
+.check-btn.absent{background:rgba(239,68,68,.1);border-color:#fca5a5;color:#dc2626}
+
+/* ── Score input ── */
+.score-inp{
+  width:64px;padding:6px 8px;border-radius:7px;
+  border:1.5px solid rgba(209,213,219,.6);
+  background:rgba(255,255,255,.7);color:#1a1f2e;
+  font-size:13px;font-weight:600;text-align:center;
+  transition:all .15s;
+}
+.score-inp:focus{outline:none;border-color:#4f46e5;background:#fff;box-shadow:0 0 0 3px rgba(79,70,229,.1)}
+
+/* ── Student name cell ── */
+.stu-name{font-weight:600;color:#111827;font-size:14px}
+.stu-no{font-size:11px;color:#9ca3af;margin-top:1px}
+
+/* ── Legend ── */
+.legend{display:flex;gap:16px;font-size:12px;color:#6b7280;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-dot{width:12px;height:12px;border-radius:3px}
+
+/* ── Tag chip ── */
+.tag{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 10px 4px 12px;border-radius:99px;font-size:13px;
+  background:rgba(99,102,241,.08);color:#4f46e5;
+  border:1px solid rgba(99,102,241,.15);
+}
+.tag-remove{background:none;border:none;cursor:pointer;color:rgba(99,102,241,.6);padding:0;display:flex;align-items:center;font-size:14px;line-height:1}
+.tag-remove:hover{color:#dc2626}
+
+/* ── Modal ── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(17,24,39,.5);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;z-index:9000;
+  animation:fadeIn .2s ease;padding:16px;
+}
+.modal-box{
+  background:#fff;border-radius:20px;padding:28px;
+  max-width:440px;width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,.2);
+  animation:slideUp .25s ease;
+}
+.modal-title{font-size:18px;font-weight:700;color:#111827;margin-bottom:20px}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+
+/* ── Section header ── */
+.section-hd{font-size:12px;font-weight:700;color:#6b7280;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+
+/* ── Login screen ── */
+.login-wrap{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:24px;
+}
+.login-card{max-width:420px;width:100%;padding:40px 36px}
+.login-logo{font-size:32px;font-weight:800;color:#4f46e5;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.login-sub{color:#6b7280;font-size:15px;margin-bottom:32px}
+.login-divider{display:flex;align-items:center;gap:12px;color:#9ca3af;font-size:13px;margin:18px 0}
+.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:#e5e7eb}
+
+/* ── App layout ── */
+.app-wrap{display:flex;flex-direction:column;min-height:100vh}
+
+/* ── Topbar ── */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  padding:0 20px;
+  background:rgba(255,255,255,.85);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(229,231,235,.6);
+  display:flex;align-items:center;height:58px;gap:12px;
+}
+.topbar-logo{font-size:18px;font-weight:800;color:#4f46e5;display:flex;align-items:center;gap:7px}
+.topbar-logo svg{width:22px;height:22px}
+.topbar-spacer{flex:1}
+
+/* ── Sidebar ── */
+.sidebar{
+  width:260px;flex-shrink:0;
+  background:rgba(255,255,255,.7);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-right:1px solid rgba(229,231,235,.5);
+  padding:16px 12px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:4px;
+}
+.sidebar-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:10px;
+  font-size:14px;font-weight:500;color:#374151;
+  cursor:pointer;transition:all .15s;border:none;background:none;
+  text-align:left;width:100%;
+}
+.sidebar-item:hover{background:rgba(99,102,241,.06);color:#4f46e5}
+.sidebar-item.active{background:rgba(99,102,241,.1);color:#4f46e5;font-weight:600}
+.sidebar-item svg,.sidebar-item span{flex-shrink:0}
+.sidebar-section{font-size:11px;font-weight:700;color:#9ca3af;letter-spacing:.06em;text-transform:uppercase;padding:8px 12px 4px;margin-top:8px}
+.sidebar-add{
+  margin:4px 4px 0;
+  border:1.5px dashed rgba(99,102,241,.3);
+  background:rgba(99,102,241,.04);
+  color:#6b7280;font-size:13px;
+}
+.sidebar-add:hover{border-color:#4f46e5;color:#4f46e5;background:rgba(99,102,241,.08)}
+
+/* ── Main content ── */
+.main-body{flex:1;display:flex;overflow:hidden}
+.main-content{flex:1;overflow-y:auto;padding:24px}
+
+/* ── Page header ── */
+.page-header{margin-bottom:20px;animation:fadeIn .3s ease}
+.page-title{font-size:22px;font-weight:800;color:#111827;display:flex;align-items:center;gap:10px}
+.page-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+
+/* ── Checklist grid ── */
+.check-section{animation:fadeIn .3s ease}
+
+/* ── Empty state ── */
+.empty-state{text-align:center;padding:60px 20px;color:#9ca3af}
+.empty-icon{font-size:48px;margin-bottom:16px;opacity:.5}
+.empty-text{font-size:16px;font-weight:600;color:#6b7280;margin-bottom:8px}
+.empty-sub{font-size:14px}
+
+/* ── Progress bar ── */
+.progress-wrap{height:6px;background:rgba(229,231,235,.6);border-radius:99px;overflow:hidden;margin-top:6px}
+.progress-bar{height:100%;border-radius:99px;transition:width .4s ease;background:linear-gradient(90deg,#4f46e5,#6366f1)}
+
+/* ── Toast ── */
+.toast{
+  position:fixed;bottom:24px;right:24px;
+  background:#111827;color:#fff;
+  padding:12px 18px;border-radius:12px;font-size:14px;font-weight:500;
+  box-shadow:0 8px 30px rgba(0,0,0,.25);
+  z-index:9999;animation:slideUp .25s ease;
+  display:flex;align-items:center;gap:8px;
+}
+
+/* ── Tab bar ── */
+.tab-bar{display:flex;gap:4px;background:rgba(243,244,246,.8);padding:4px;border-radius:10px;margin-bottom:16px}
+.tab-item{flex:1;padding:8px 14px;border-radius:7px;font-size:13px;font-weight:600;color:#6b7280;cursor:pointer;transition:all .15s;text-align:center;border:none;background:none;font-family:inherit}
+.tab-item.active{background:#fff;color:#4f46e5;box-shadow:0 1px 6px rgba(0,0,0,.08)}
+.tab-item:hover:not(.active){color:#374151;background:rgba(255,255,255,.6)}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .sidebar{display:none}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .main-content{padding:16px}
+  .topbar{padding:0 14px}
+}
 </style>
 </head>
 <body>
+
+<div id="app-loading">
+  <div class="spinner"></div>
+  <p>กำลังโหลด ClassCheck Pro...</p>
+</div>
 <div id="root"></div>
+
+<!-- ===================== FIREBASE CONFIG ===================== -->
+<script>
+// ⚠️  แก้ไข firebaseConfig ด้วยค่าจาก Firebase Console ของคุณ
+const firebaseConfig = {
+  apiKey: "AIzaSyABv4bIS3H8wj7zoy5aZPtskfSLljJyGOw",
+  authDomain: "assigncheck-pro-6e559.firebaseapp.com",
+  projectId: "assigncheck-pro-6e559",
+  storageBucket: "assigncheck-pro-6e559.firebasestorage.app",
+  messagingSenderId: "855085128789",
+  appId: "1:855085128789:web:b7693a44082e617f6448dc"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+window._fb = { auth, db };
+</script>
+
+<!-- ===================== REACT APP ===================== -->
 <script type="text/babel">
-const { useState, useEffect } = React;
+const { useState, useEffect, useRef, useCallback } = React;
 
-// ── DATA ────────────────────────────────────────────────────────
-const N1=["เด็กชายพิชัย มะลิวรรณ","เด็กชายกฤษณะ สุขใจ","เด็กหญิงวิภา ทองคำ","เด็กชายนพดล รุ่งเรือง","เด็กหญิงสุภาพร เพชรดี","เด็กชายอนุชา ศรีสวัสดิ์","เด็กหญิงปิยะนุช แก้วใส","เด็กชายธีรพงษ์ ดาวเรือง","เด็กหญิงนภัสสร สมบูรณ์","เด็กชายสุรพล ชัยมงคล","เด็กหญิงอรทัย พรหมมา","เด็กชายวรวุฒิ เจริญสุข","เด็กหญิงกัญญา ลือชา","เด็กชายพงศ์พัฒน์ วงศ์สวรรค์","เด็กหญิงณัฐชา ทิพย์สุวรรณ","เด็กชายภาณุวัฒน์ แสงทอง","เด็กหญิงศุภลักษณ์ มีโชค","เด็กชายจักรพล บุญส่ง","เด็กหญิงพรรณิภา วรรณศิลป์","เด็กชายนันทวัฒน์ คงดี","เด็กหญิงอาภาพร สุขสันต์","เด็กชายยศกร มั่นคง","เด็กหญิงธิดา รักษ์ดี","เด็กชายปัญญา ใจดี","เด็กหญิงรัตนา เสาวลักษณ์","เด็กชายสมชาย วงศ์ทอง","เด็กหญิงจิราพร นาคสุข","เด็กชายพีระพล แสนดี","เด็กหญิงมาลี สุขสมบูรณ์","เด็กชายเจษฎา พันธ์ดี","เด็กหญิงสายฝน มงคล","เด็กชายชนะชัย เพ็ชรงาม","เด็กหญิงบุษบา รัตนชัย","เด็กชายวิทวัส สุขเกษม","เด็กหญิงอรอนงค์ ดีงาม","เด็กชายคมสัน ศรีเมือง","เด็กหญิงปาริชาติ ชัยดี","เด็กชายสมศักดิ์ ทองใส"];
-const S1=["submitted","submitted","late","not_submitted","submitted","submitted","late","submitted","not_submitted","submitted","submitted","submitted","late","submitted","submitted","not_submitted","submitted","submitted","submitted","submitted","late","submitted","submitted","submitted","submitted","not_submitted","submitted","submitted","submitted","submitted","submitted","late","submitted","submitted","submitted","submitted","submitted","submitted"];
-const C1=[18,20,15,0,19,17,12,20,0,18,16,20,14,19,20,0,18,17,19,20,13,20,18,20,19,0,17,20,18,19,20,16,20,19,18,20,19,17];
-const N2=["เด็กชายกมล ศรีชมภู","เด็กหญิงฐิติมา ทองดี","เด็กชายวุฒิชัย สิงหา","เด็กหญิงสิริมา เพ็ชรดำ","เด็กชายอภิสิทธิ์ นาคา","เด็กหญิงชนิดา มีสุข","เด็กชายณัฐพล คำมา","เด็กหญิงวรัญญา ดวงดี","เด็กชายสุขสันต์ วิไล","เด็กหญิงภัทรา สุโข","เด็กชายกิตติ เจนใจ","เด็กหญิงนวลจันทร์ พรม","เด็กชายชัยวัฒน์ วงษ์","เด็กหญิงปริมปรา งาม","เด็กชายวรกิจ มะลิ","เด็กหญิงสุกานดา หน่าย","เด็กชายอัครพล ดา","เด็กหญิงธนัชชา บุญ","เด็กชายปราบ เด็ด","เด็กหญิงณภัทร สว่าง","เด็กชายภูมิ ดีงาม","เด็กหญิงมาลินี ยอดดี","เด็กชายอธิป ชัย","เด็กหญิงจุฑามาศ ทอง","เด็กชายนิธิ แดง","เด็กหญิงพัชรี ขาว","เด็กชายชวลิต เขียว","เด็กหญิงกนกวรรณ น้ำเงิน","เด็กชายสันติ ม่วง","เด็กหญิงนิภา เหลือง","เด็กชายยุทธนา ฟ้า","เด็กหญิงธัญลักษณ์ ส้ม","เด็กชายชาญชัย แดง","เด็กหญิงรุ่งนภา ดำ","เด็กชายเอกชัย ขาว"];
-const S2=["submitted","not_submitted","submitted","late","submitted","submitted","submitted","not_submitted","submitted","submitted","late","submitted","submitted","submitted","not_submitted","submitted","submitted","late","submitted","submitted","submitted","not_submitted","submitted","submitted","submitted","submitted","late","submitted","submitted","submitted","not_submitted","submitted","submitted","late","submitted"];
-const C2=[20,0,19,14,20,18,17,0,20,19,15,20,18,20,0,17,20,13,18,20,19,0,20,18,17,20,14,19,20,18,0,20,19,15,20];
-const N3=["เด็กชายกฤษ บุญมี","เด็กหญิงอัญชลี ทองแดง","เด็กชายธนากร ดีเลิศ","เด็กหญิงพิมพ์ชนก สว่างใจ","เด็กชายภคพล หมั่นดี","เด็กหญิงกาญจนา ศรีดี","เด็กชายชัยณรงค์ พิมพ์ดี","เด็กหญิงนริสรา งามดี","เด็กชายปัณณ์ ใจดี","เด็กหญิงลลิตา สุขสม","เด็กชายฉัตรชัย เจริญ","เด็กหญิงอิสรา รุ่งเรือง","เด็กชายพัสกร ทองดี","เด็กหญิงณัฐกานต์ สุขดี","เด็กชายกษิดิ์เดช มั่นคง","เด็กหญิงปุณณภา ศรีดี","เด็กชายพีรวิชญ์ ใจใส","เด็กหญิงชนิสรา สดใส","เด็กชายนัทธพงศ์ วิไล","เด็กหญิงอัมพิกา เพชรดี","เด็กชายจิรายุ สวรรค์","เด็กหญิงสุพรรณษา งามดี","เด็กชายพิสิษฐ์ ดีเลิศ","เด็กหญิงพัณณิน ชัยดี","เด็กชายอิทธิชัย สุขใจ","เด็กหญิงกัลยา ทองคำ","เด็กชายวชิรวิทย์ แก้วใส","เด็กหญิงภัทรศยา บุญดี","เด็กชายธีระ มีสุข","เด็กหญิงสรัลชนา ศรีสวัสดิ์","เด็กชายรพีพัฒน์ วงศ์ทอง","เด็กหญิงจิดาภา พรหมดี"];
-const S3=["submitted","submitted","not_submitted","submitted","late","submitted","submitted","submitted","not_submitted","submitted","submitted","late","submitted","submitted","submitted","submitted","not_submitted","submitted","submitted","late","submitted","submitted","submitted","not_submitted","submitted","submitted","submitted","late","submitted","submitted","submitted","not_submitted"];
-const C3=[20,19,0,20,16,18,20,19,0,20,18,15,20,20,19,18,0,20,17,14,20,19,18,0,20,20,19,16,20,18,20,0];
-
-const mk=(names,sts,scores)=>names.map((name,i)=>({id:i+1,no:i+1,name,status:sts[i]||"submitted",score:scores[i]||0,note:""}));
-
-const INIT_ROOMS=[
-  {id:1,name:"ม.1/1",subject:"คณิตศาสตร์พื้นฐาน",students:38,color:"#06b6d4"},
-  {id:2,name:"ม.1/2",subject:"คณิตศาสตร์เพิ่มเติม",students:35,color:"#8b5cf6"},
-  {id:3,name:"ม.1/3",subject:"กิจกรรม GSP",students:32,color:"#f59e0b"},
-];
-const INIT_STUDENTS={1:mk(N1,S1,C1),2:mk(N2,S2,C2),3:mk(N3,S3,C3)};
-const INIT_ASGNS=[
-  {id:1,classroomId:1,title:"แบบฝึกหัดทศนิยม บทที่ 4",maxScore:20,dueDate:"2025-06-10"},
-  {id:2,classroomId:1,title:"ใบงาน 4.1 เศษส่วน",maxScore:20,dueDate:"2025-06-05"},
-  {id:3,classroomId:2,title:"แบบฝึก อสมการ",maxScore:20,dueDate:"2025-06-08"},
-  {id:4,classroomId:3,title:"สร้างรูปทรงด้วย GSP",maxScore:20,dueDate:"2025-06-12"},
-];
-
-// ── UTILS ───────────────────────────────────────────────────────
-const sLabel=s=>({submitted:"ส่งแล้ว",late:"ส่งช้า",not_submitted:"ไม่ส่ง",pending:"รอตรวจ"}[s]||s);
-const sCls=(s,dk)=>({
-  submitted:dk?"bg-emerald-500/20 text-emerald-300 border-emerald-500/30":"bg-emerald-50 text-emerald-700 border-emerald-200",
-  late:dk?"bg-amber-500/20 text-amber-300 border-amber-500/30":"bg-amber-50 text-amber-700 border-amber-200",
-  not_submitted:dk?"bg-red-500/20 text-red-300 border-red-500/30":"bg-red-50 text-red-700 border-red-200",
-  pending:dk?"bg-blue-500/20 text-blue-300 border-blue-500/30":"bg-blue-50 text-blue-700 border-blue-200",
-}[s]||"");
-
-// ── TOAST ───────────────────────────────────────────────────────
-let _T=null;
-function ToastHost(){
-  const[list,setList]=useState([]);
-  useEffect(()=>{_T=(msg,type="success")=>{const id=Date.now();setList(p=>[...p,{id,msg,type}]);setTimeout(()=>setList(p=>p.filter(t=>t.id!==id)),3000);};},[]);
-  return(
-    <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none">
-      {list.map(t=>(
-        <div key={t.id} className={`slide-in px-4 py-3 rounded-xl shadow-2xl text-sm font-medium flex items-center gap-2 pointer-events-auto
-          ${t.type==="success"?"bg-emerald-500 text-white":t.type==="error"?"bg-red-500 text-white":"bg-blue-500 text-white"}`}>
-          {t.type==="success"?"✓":t.type==="error"?"✕":"🔔"} {t.msg}
-        </div>
-      ))}
-    </div>
-  );
+/* ───── helpers ───── */
+function formatThaiDate(d){
+  if(!d) return '';
+  const date = d instanceof Date ? d : new Date(d);
+  return date.toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
 }
-const toast=(msg,type)=>_T&&_T(msg,type);
+function today(){ return new Date().toISOString().slice(0,10); }
+function uid(){ return Math.random().toString(36).slice(2,9); }
 
-// ── ICON (SVG paths) ────────────────────────────────────────────
-function Ic({n,s=20,c=""}){
-  const P={
-    dashboard:<><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></>,
-    home:<><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>,
-    file:<><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></>,
-    bar:<><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></>,
-    share:<><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></>,
-    gear:<><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></>,
-    plus:<><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>,
-    check:<polyline points="20 6 9 17 4 12"/>,
-    x:<><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>,
-    alert:<><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></>,
-    clock:<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>,
-    search:<><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></>,
-    dl:<><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></>,
-    users:<><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></>,
-    moon:<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>,
-    sun:<><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>,
-    arr:<><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></>,
-    mail:<><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></>,
-    copy:<><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></>,
-    zap:<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>,
-    edit:<><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></>,
-    trash:<><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></>,
-  };
-  return(<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={c}>{P[n]}</svg>);
+/* ───── Toast ───── */
+function Toast({msg,onDone}){
+  useEffect(()=>{ const t=setTimeout(onDone,2800); return()=>clearTimeout(t); },[]);
+  return <div className="toast">✓ {msg}</div>;
 }
 
-// ── CARD ────────────────────────────────────────────────────────
-function Card({label,value,icon,color,dk,sub}){return(
-  <div className={`rounded-2xl p-4 flex flex-col gap-2 border ${dk?"bg-slate-800/60 border-slate-700/50 shadow-lg":"bg-white border-gray-100 shadow-sm"}`}>
-    <div className="flex items-center justify-between">
-      <span className={`text-xs font-medium ${dk?"text-slate-400":"text-gray-500"}`}>{label}</span>
-      <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{background:color+"22",color}}><Ic n={icon} s={16}/></div>
-    </div>
-    <div className={`text-2xl font-bold ${dk?"text-white":"text-gray-900"}`}>{value}</div>
-    {sub&&<div className={`text-xs ${dk?"text-slate-500":"text-gray-400"}`}>{sub}</div>}
-  </div>
-);}
-
-// ── BOTTOM NAV ──────────────────────────────────────────────────
-function BNav({page,setPage,dk}){
-  const items=[{id:"dashboard",icon:"dashboard",label:"ภาพรวม"},{id:"classroom",icon:"home",label:"ห้องเรียน"},{id:"assignment",icon:"file",label:"เช็คงาน"},{id:"reports",icon:"bar",label:"รายงาน"},{id:"share",icon:"share",label:"แชร์"}];
+/* ───── Confirm dialog ───── */
+function Confirm({msg,onOk,onCancel}){
   return(
-    <nav className={`fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t backdrop-blur-xl ${dk?"bg-slate-900/95 border-slate-700/50":"bg-white/95 border-gray-200"}`}>
-      <div className="flex">
-        {items.map(i=>(
-          <button key={i.id} onClick={()=>setPage(i.id)} className={`flex-1 flex flex-col items-center gap-1 py-2 text-[10px] font-medium transition-all ${page===i.id?"text-cyan-500":dk?"text-slate-500":"text-gray-400"}`}>
-            <div className={`w-10 h-6 rounded-full flex items-center justify-center ${page===i.id?"bg-cyan-500/15":""}`}><Ic n={i.icon} s={18}/></div>
-            {i.label}
-          </button>
-        ))}
-      </div>
-    </nav>
-  );
-}
-
-// ── SIDEBAR ─────────────────────────────────────────────────────
-function Sidebar({page,setPage,dk}){
-  const items=[{id:"dashboard",icon:"dashboard",label:"Dashboard"},{id:"classroom",icon:"home",label:"ห้องเรียน"},{id:"assignment",icon:"file",label:"เช็คงาน"},{id:"reports",icon:"bar",label:"รายงาน"},{id:"share",icon:"share",label:"แชร์ & ส่งออก"},{id:"settings",icon:"gear",label:"ตั้งค่า"}];
-  return(
-    <aside className={`hidden lg:flex flex-col w-60 h-screen sticky top-0 border-r p-4 gap-1 flex-shrink-0 ${dk?"bg-slate-900 border-slate-800":"bg-white border-gray-100"}`}>
-      <div className="flex items-center gap-3 px-3 py-4 mb-4">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center shadow-lg shadow-cyan-500/30"><Ic n="zap" s={18} c="text-white"/></div>
-        <div><div className={`font-bold text-sm ${dk?"text-white":"text-gray-900"}`}>AssignCheck</div><div className={`text-xs ${dk?"text-slate-500":"text-gray-400"}`}>Pro</div></div>
-      </div>
-      {items.map(i=>(
-        <button key={i.id} onClick={()=>setPage(i.id)} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-left ${page===i.id?"bg-cyan-500/10 text-cyan-600":dk?"text-slate-400 hover:text-slate-200 hover:bg-slate-800":"text-gray-500 hover:text-gray-900 hover:bg-gray-50"}`}>
-          <Ic n={i.icon} s={18}/>{i.label}
-        </button>
-      ))}
-      <div className="flex-1"/>
-      <div className={`px-3 py-3 rounded-xl text-xs ${dk?"bg-slate-800 text-slate-400":"bg-gray-50 text-gray-500"}`}><div className="font-semibold mb-1">นายธนกฤต</div><div>โรงเรียนหล่มสักวิทยาคม</div></div>
-    </aside>
-  );
-}
-
-// ── HEADER ──────────────────────────────────────────────────────
-function Header({title,dk,toggleDk}){return(
-  <header className={`sticky top-0 z-40 flex items-center justify-between px-4 py-3 border-b backdrop-blur-xl flex-shrink-0 ${dk?"bg-slate-900/90 border-slate-800":"bg-white/90 border-gray-100"}`}>
-    <div className="flex items-center gap-3">
-      <div className="lg:hidden w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center"><Ic n="zap" s={16} c="text-white"/></div>
-      <h1 className={`font-bold text-base lg:text-lg ${dk?"text-white":"text-gray-900"}`}>{title}</h1>
-    </div>
-    <button onClick={toggleDk} className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${dk?"bg-slate-800 text-slate-400":"bg-gray-100 text-gray-500"}`}><Ic n={dk?"sun":"moon"} s={17}/></button>
-  </header>
-);}
-
-// ── DASHBOARD ───────────────────────────────────────────────────
-function DashboardPage({rooms,asgns,students,dk,setPage}){
-  const allS=Object.values(students).flat();
-  const sub=allS.filter(s=>s.status==="submitted").length;
-  const late=allS.filter(s=>s.status==="late").length;
-  const notS=allS.filter(s=>s.status==="not_submitted").length;
-  const rate=allS.length?Math.round(((sub+late)/allS.length)*100):0;
-  const avg=allS.filter(s=>s.score>0).reduce((a,s,_,arr)=>a+s.score/arr.length,0).toFixed(1);
-  return(
-    <div className="p-4 space-y-5 pb-24 lg:pb-6">
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-        <Card label="ห้องเรียน" value={rooms.length} icon="home" color="#06b6d4" dk={dk}/>
-        <Card label="นักเรียนทั้งหมด" value={rooms.reduce((a,r)=>a+r.students,0)} icon="users" color="#8b5cf6" dk={dk}/>
-        <Card label="ส่งงานแล้ว" value={sub} icon="check" color="#10b981" dk={dk} sub={`จาก ${allS.length} คน`}/>
-        <Card label="ส่งช้า" value={late} icon="clock" color="#f59e0b" dk={dk}/>
-        <Card label="ไม่ส่ง" value={notS} icon="x" color="#ef4444" dk={dk}/>
-        <Card label="คะแนนเฉลี่ย" value={avg} icon="bar" color="#f59e0b" dk={dk} sub={`ส่งงาน ${rate}%`}/>
-      </div>
-      <div className={`rounded-2xl p-4 border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
-        <div className="flex justify-between mb-2"><span className={`text-sm font-semibold ${dk?"text-white":"text-gray-800"}`}>อัตราการส่งงานรวม</span><span className="text-sm font-bold text-cyan-500">{rate}%</span></div>
-        <div className={`h-3 rounded-full ${dk?"bg-slate-700":"bg-gray-100"} overflow-hidden`}><div className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-teal-400" style={{width:`${rate}%`}}/></div>
-        <div className="flex gap-4 mt-3">
-          {[{l:"ส่งแล้ว",v:sub,c:"#10b981"},{l:"ส่งช้า",v:late,c:"#f59e0b"},{l:"ไม่ส่ง",v:notS,c:"#ef4444"}].map(i=>(
-            <div key={i.l} className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full" style={{background:i.c}}/><span className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>{i.l} {i.v}</span></div>
-          ))}
-        </div>
-      </div>
-      <div className={`rounded-2xl p-4 border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
-        <div className={`text-sm font-semibold mb-3 ${dk?"text-white":"text-gray-800"}`}>🚨 แจ้งเตือนสำคัญ</div>
-        {[{icon:"alert",color:"#ef4444",label:"งานเกินกำหนด",detail:"ใบงาน 4.1 เศษส่วน (ม.1/1)",bg:dk?"bg-red-500/10 border-red-500/20":"bg-red-50 border-red-100"},
-          {icon:"clock",color:"#f59e0b",label:"ใกล้หมดเวลา",detail:"แบบฝึก อสมการ — อีก 2 วัน",bg:dk?"bg-amber-500/10 border-amber-500/20":"bg-amber-50 border-amber-100"},
-          {icon:"users",color:"#06b6d4",label:"ส่งงานต่ำกว่า 60%",detail:"ม.1/3 : กิจกรรม GSP",bg:dk?"bg-cyan-500/10 border-cyan-500/20":"bg-cyan-50 border-cyan-100"},
-        ].map((a,idx)=>(
-          <div key={idx} className={`flex items-start gap-3 p-3 rounded-xl border mb-2 ${a.bg}`}>
-            <div style={{color:a.color}}><Ic n={a.icon} s={16}/></div>
-            <div><div className={`text-xs font-semibold ${dk?"text-white":"text-gray-800"}`}>{a.label}</div><div className={`text-xs mt-0.5 ${dk?"text-slate-400":"text-gray-500"}`}>{a.detail}</div></div>
-          </div>
-        ))}
-      </div>
-      <div>
-        <div className={`text-sm font-semibold mb-3 ${dk?"text-white":"text-gray-800"}`}>ห้องเรียนของฉัน</div>
-        <div className="space-y-3">
-          {rooms.map(r=>{
-            const st=students[r.id]||[];
-            const rt=st.length?Math.round((st.filter(s=>s.status!=="not_submitted").length/st.length)*100):0;
-            return(<div key={r.id} className={`rounded-2xl p-4 border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-xs" style={{background:r.color}}>{r.name}</div>
-                  <div><div className={`font-semibold text-sm ${dk?"text-white":"text-gray-900"}`}>{r.subject}</div><div className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>{r.students} คน</div></div>
-                </div>
-                <span className={`text-lg font-bold ${rt>=80?"text-emerald-500":rt>=60?"text-amber-500":"text-red-500"}`}>{rt}%</span>
-              </div>
-              <div className={`h-2 rounded-full ${dk?"bg-slate-700":"bg-gray-100"} overflow-hidden`}><div className="h-full rounded-full" style={{width:`${rt}%`,background:r.color}}/></div>
-            </div>);
-          })}
-        </div>
-      </div>
-      <div>
-        <div className={`text-sm font-semibold mb-3 ${dk?"text-white":"text-gray-800"}`}>Quick Actions</div>
-        <div className="grid grid-cols-2 gap-3">
-          {[{label:"เช็คงาน",icon:"check",color:"#10b981",pg:"assignment"},{label:"ดูรายงาน",icon:"bar",color:"#8b5cf6",pg:"reports"},{label:"แชร์ผล",icon:"share",color:"#f59e0b",pg:"share"},{label:"ตั้งค่า",icon:"gear",color:"#06b6d4",pg:"settings"}].map(a=>(
-            <button key={a.label} onClick={()=>setPage(a.pg)} className={`flex items-center gap-3 p-4 rounded-2xl border text-left active:scale-95 ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background:a.color+"22",color:a.color}}><Ic n={a.icon} s={18}/></div>
-              <span className={`text-sm font-medium ${dk?"text-slate-300":"text-gray-700"}`}>{a.label}</span>
-            </button>
-          ))}
+    <div className="modal-overlay" onClick={onCancel}>
+      <div className="modal-box" style={{maxWidth:360}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-title" style={{fontSize:16}}>{msg}</div>
+        <div className="modal-footer">
+          <button className="btn btn-ghost" onClick={onCancel}>ยกเลิก</button>
+          <button className="btn btn-danger" onClick={onOk}>ยืนยัน</button>
         </div>
       </div>
     </div>
   );
 }
 
-// ── CLASSROOM ───────────────────────────────────────────────────
-const COLORS=["#06b6d4","#8b5cf6","#f59e0b","#10b981","#ef4444","#ec4899","#3b82f6","#f97316"];
+/* ═══════════════════════════════════════════════
+   LOGIN SCREEN
+══════════════════════════════════════════════ */
+function LoginScreen({onLogin}){
+  const [email,setEmail]=useState('');
+  const [pass,setPass]=useState('');
+  const [loading,setLoading]=useState(false);
+  const [err,setErr]=useState('');
+  const [mode,setMode]=useState('login'); // login | register
 
-function RoomForm({initial,onSave,onCancel,dk}){
-  const[form,setForm]=useState(initial||{name:"",subject:"",color:"#06b6d4"});
-  return(
-    <div className={`rounded-2xl p-4 border space-y-3 slide-in ${dk?"bg-slate-800 border-slate-700":"bg-cyan-50 border-cyan-200"}`}>
-      <div className={`text-sm font-semibold ${dk?"text-white":"text-gray-800"}`}>{initial?"แก้ไขห้องเรียน":"เพิ่มห้องเรียนใหม่"}</div>
-      <input value={form.name} onChange={e=>setForm(p=>({...p,name:e.target.value}))} placeholder="ชื่อห้อง เช่น ม.1/4"
-        className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none ${dk?"bg-slate-700 border-slate-600 text-white placeholder-slate-500":"bg-white border-gray-200"}`}/>
-      <input value={form.subject} onChange={e=>setForm(p=>({...p,subject:e.target.value}))} placeholder="วิชา เช่น คณิตศาสตร์พื้นฐาน"
-        className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none ${dk?"bg-slate-700 border-slate-600 text-white placeholder-slate-500":"bg-white border-gray-200"}`}/>
-      <div>
-        <div className={`text-xs mb-2 ${dk?"text-slate-400":"text-gray-500"}`}>สีห้องเรียน</div>
-        <div className="flex gap-2 flex-wrap">
-          {COLORS.map(c=>(
-            <button key={c} onClick={()=>setForm(p=>({...p,color:c}))}
-              className={`w-8 h-8 rounded-full transition-all ${form.color===c?"ring-2 ring-offset-2 scale-110":"opacity-70 hover:opacity-100"} ${dk?"ring-offset-slate-800":"ring-offset-white"}`}
-              style={{background:c,ringColor:c}}/>
-          ))}
-        </div>
-      </div>
-      <div className="flex gap-2">
-        <button onClick={()=>{if(!form.name||!form.subject)return;onSave(form);}} className="flex-1 py-2 rounded-xl bg-cyan-500 text-white text-sm font-medium active:scale-95">บันทึก</button>
-        <button onClick={onCancel} className={`flex-1 py-2 rounded-xl text-sm ${dk?"bg-slate-700 text-slate-300":"bg-gray-100 text-gray-600"}`}>ยกเลิก</button>
-      </div>
-    </div>
-  );
-}
-
-function DeleteConfirm({room,onConfirm,onCancel,dk}){
-  return(
-    <div className="fixed inset-0 z-50 flex items-end lg:items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onCancel}>
-      <div className={`w-full max-w-sm rounded-3xl p-6 ${dk?"bg-slate-800":"bg-white"} shadow-2xl slide-in`} onClick={e=>e.stopPropagation()}>
-        <div className="w-14 h-14 rounded-2xl bg-red-500/15 text-red-500 flex items-center justify-center mx-auto mb-4"><Ic n="trash" s={24}/></div>
-        <div className={`text-base font-bold text-center mb-1 ${dk?"text-white":"text-gray-900"}`}>ลบห้องเรียน?</div>
-        <div className={`text-sm text-center mb-6 ${dk?"text-slate-400":"text-gray-500"}`}>ห้อง <span className="font-semibold" style={{color:room.color}}>{room.name}</span> · {room.subject}<br/>ข้อมูลทั้งหมดจะถูกลบถาวร ไม่สามารถกู้คืนได้</div>
-        <div className="flex gap-3">
-          <button onClick={onCancel} className={`flex-1 py-3 rounded-2xl text-sm font-medium ${dk?"bg-slate-700 text-slate-300":"bg-gray-100 text-gray-600"}`}>ยกเลิก</button>
-          <button onClick={onConfirm} className="flex-1 py-3 rounded-2xl bg-red-500 text-white text-sm font-semibold active:scale-95">ลบเลย</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ClassroomPage({rooms,setRooms,students,setStudents,dk}){
-  const[showAdd,setShowAdd]=useState(false);
-  const[editRoom,setEditRoom]=useState(null);   // room object being edited
-  const[deleteRoom,setDeleteRoom]=useState(null); // room object to confirm delete
-  const[sel,setSel]=useState(null);             // room selected to view students
-  const[q,setQ]=useState("");
-
-  const addRoom=(form)=>{
-    setRooms(p=>[...p,{id:Date.now(),name:form.name,subject:form.subject,students:0,color:form.color}]);
-    setShowAdd(false);toast("เพิ่มห้องเรียนสำเร็จ ✓","success");
-  };
-
-  const saveEdit=(form)=>{
-    setRooms(p=>p.map(r=>r.id===editRoom.id?{...r,name:form.name,subject:form.subject,color:form.color}:r));
-    // sync sel if currently viewing
-    if(sel&&sel.id===editRoom.id) setSel(prev=>({...prev,name:form.name,subject:form.subject,color:form.color}));
-    setEditRoom(null);toast("แก้ไขข้อมูลห้องเรียนแล้ว ✓","success");
-  };
-
-  const confirmDelete=()=>{
-    setRooms(p=>p.filter(r=>r.id!==deleteRoom.id));
-    setStudents(prev=>{const n={...prev};delete n[deleteRoom.id];return n;});
-    if(sel&&sel.id===deleteRoom.id) setSel(null);
-    toast(`ลบห้อง ${deleteRoom.name} แล้ว`,"error");
-    setDeleteRoom(null);
-  };
-
-  // ── Student detail view ──
-  if(sel){
-    const currentRoom=rooms.find(r=>r.id===sel.id)||sel;
-    const st=(students[sel.id]||[]).filter(s=>q===""||s.name.includes(q)||String(s.no).includes(q));
-    return(<div className="p-4 space-y-4 pb-24 lg:pb-6">
-      {deleteRoom&&<DeleteConfirm room={deleteRoom} onConfirm={confirmDelete} onCancel={()=>setDeleteRoom(null)} dk={dk}/>}
-      <div className="flex items-center gap-3">
-        <button onClick={()=>{setSel(null);setQ("");}} className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${dk?"bg-slate-800 text-slate-400":"bg-gray-100 text-gray-600"}`}><Ic n="arr" s={18} c="rotate-180"/></button>
-        <div className="flex-1 min-w-0">
-          <div className={`font-bold truncate ${dk?"text-white":"text-gray-900"}`}>{currentRoom.name}</div>
-          <div className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>{currentRoom.subject} · {currentRoom.students} คน</div>
-        </div>
-        {/* edit & delete buttons in student view */}
-        <button onClick={()=>setEditRoom(currentRoom)} className={`w-9 h-9 rounded-xl flex items-center justify-center ${dk?"bg-slate-800 text-slate-400 hover:text-cyan-400":"bg-gray-100 text-gray-500 hover:text-cyan-600"}`}><Ic n="edit" s={16}/></button>
-        <button onClick={()=>setDeleteRoom(currentRoom)} className={`w-9 h-9 rounded-xl flex items-center justify-center ${dk?"bg-slate-800 text-slate-400 hover:text-red-400":"bg-gray-100 text-gray-500 hover:text-red-500"}`}><Ic n="trash" s={16}/></button>
-      </div>
-
-      {editRoom&&<RoomForm initial={{name:editRoom.name,subject:editRoom.subject,color:editRoom.color}} onSave={saveEdit} onCancel={()=>setEditRoom(null)} dk={dk}/>}
-
-      <div className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border ${dk?"bg-slate-800 border-slate-700":"bg-gray-50 border-gray-200"}`}>
-        <Ic n="search" s={16} c={dk?"text-slate-500":"text-gray-400"}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="ค้นหานักเรียน..." className={`flex-1 bg-transparent text-sm outline-none ${dk?"text-white placeholder-slate-500":"text-gray-900 placeholder-gray-400"}`}/>
-      </div>
-      <div className="space-y-2">
-        {st.length===0&&<div className={`text-center py-10 text-sm ${dk?"text-slate-500":"text-gray-400"}`}>ไม่พบนักเรียน</div>}
-        {st.map(s=>(<div key={s.id} className={`flex items-center gap-3 p-3 rounded-xl border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center text-white text-xs font-bold">{s.no}</div>
-          <div className="flex-1 min-w-0"><div className={`text-sm font-medium truncate ${dk?"text-white":"text-gray-900"}`}>{s.name}</div><div className={`text-xs ${dk?"text-slate-500":"text-gray-400"}`}>เลขที่ {s.no}</div></div>
-          <span className={`text-xs px-2 py-1 rounded-lg border font-medium ${sCls(s.status,dk)}`}>{sLabel(s.status)}</span>
-        </div>))}
-      </div>
-    </div>);
+  async function handleSubmit(e){
+    e.preventDefault(); setErr(''); setLoading(true);
+    try{
+      if(mode==='login'){
+        await window._fb.auth.signInWithEmailAndPassword(email,pass);
+      } else {
+        await window._fb.auth.createUserWithEmailAndPassword(email,pass);
+      }
+    } catch(e2){
+      const map={'auth/user-not-found':'ไม่พบบัญชีนี้','auth/wrong-password':'รหัสผ่านไม่ถูกต้อง','auth/email-already-in-use':'อีเมลนี้มีบัญชีแล้ว','auth/weak-password':'รหัสผ่านต้องมีอย่างน้อย 6 ตัว','auth/invalid-email':'รูปแบบอีเมลไม่ถูกต้อง','auth/invalid-credential':'อีเมลหรือรหัสผ่านไม่ถูกต้อง'};
+      setErr(map[e2.code]||e2.message);
+    } finally{ setLoading(false); }
   }
 
-  // ── Room list view ──
-  return(<div className="p-4 space-y-4 pb-24 lg:pb-6">
-    {deleteRoom&&<DeleteConfirm room={deleteRoom} onConfirm={confirmDelete} onCancel={()=>setDeleteRoom(null)} dk={dk}/>}
+  async function loginGoogle(){
+    setErr(''); setLoading(true);
+    try{
+      const prov=new firebase.auth.GoogleAuthProvider();
+      await window._fb.auth.signInWithPopup(prov);
+    } catch(e2){ setErr(e2.message); } finally{ setLoading(false); }
+  }
 
-    <div className="flex items-center justify-between">
-      <p className={`text-sm ${dk?"text-slate-400":"text-gray-500"}`}>{rooms.length} ห้องเรียน</p>
-      <button onClick={()=>{setShowAdd(true);setEditRoom(null);}} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500 text-white text-sm font-medium shadow-lg shadow-cyan-500/30 active:scale-95"><Ic n="plus" s={16}/> เพิ่มห้อง</button>
+  async function resetPass(){
+    if(!email){ setErr('กรอกอีเมลก่อนแล้วกดลืมรหัส'); return; }
+    try{ await window._fb.auth.sendPasswordResetEmail(email); alert('ส่งลิงก์รีเซ็ตรหัสผ่านไปที่ '+email+' แล้ว'); }
+    catch(e2){ setErr(e2.message); }
+  }
+
+  return(
+    <div className="login-wrap">
+      <div className="card login-card">
+        <div className="login-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          ClassCheck Pro
+        </div>
+        <div className="login-sub">{mode==='login'?'ยินดีต้อนรับ! เข้าสู่ระบบเพื่อจัดการงาน':'สร้างบัญชีใหม่'}</div>
+
+        <button className="btn btn-ghost" onClick={loginGoogle} disabled={loading}
+          style={{width:'100%',marginBottom:4,padding:'10px 16px',border:'1px solid #e5e7eb',borderRadius:10}}>
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          เข้าสู่ระบบด้วย Google
+        </button>
+
+        <div className="login-divider">หรือ</div>
+
+        <form onSubmit={handleSubmit} style={{display:'flex',flexDirection:'column',gap:12}}>
+          <div>
+            <label className="form-label">อีเมล</label>
+            <input className="form-input" type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="teacher@school.ac.th" required/>
+          </div>
+          <div>
+            <label className="form-label">รหัสผ่าน</label>
+            <input className="form-input" type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="••••••••" required minLength={6}/>
+          </div>
+          {err && <div style={{color:'#dc2626',fontSize:13,background:'rgba(220,38,38,.06)',padding:'8px 12px',borderRadius:8,border:'1px solid rgba(220,38,38,.15)'}}>{err}</div>}
+          <button className="btn btn-primary" type="submit" disabled={loading} style={{width:'100%',padding:'11px'}}>
+            {loading?'กำลังดำเนินการ...':(mode==='login'?'เข้าสู่ระบบ':'สมัครสมาชิก')}
+          </button>
+        </form>
+
+        <div style={{display:'flex',justifyContent:'space-between',marginTop:16,fontSize:13}}>
+          <button className="btn btn-ghost btn-sm" onClick={()=>{setMode(m=>m==='login'?'register':'login');setErr('')}}>
+            {mode==='login'?'สมัครสมาชิก':'← กลับเข้าสู่ระบบ'}
+          </button>
+          {mode==='login' && <button className="btn btn-ghost btn-sm" onClick={resetPass}>ลืมรหัสผ่าน?</button>}
+        </div>
+      </div>
     </div>
+  );
+}
 
-    {showAdd&&!editRoom&&<RoomForm onSave={addRoom} onCancel={()=>setShowAdd(false)} dk={dk}/>}
+/* ═══════════════════════════════════════════════
+   CLASS MODAL — create/edit class
+══════════════════════════════════════════════ */
+function ClassModal({cls,onSave,onClose}){
+  const [name,setName]=useState(cls?.name||'');
+  const [subject,setSubject]=useState(cls?.subject||'');
+  const [year,setYear]=useState(cls?.year||'2568');
+  const [term,setTerm]=useState(cls?.term||'1');
+  const [teacher,setTeacher]=useState(cls?.teacher||'');
 
-    <div className="space-y-3">
-      {rooms.map(r=>{
-        const st=students[r.id]||[];
-        const rt=st.length?Math.round((st.filter(s=>s.status!=="not_submitted").length/st.length)*100):0;
-        const isEditing=editRoom?.id===r.id&&!showAdd;
-        return(<div key={r.id}>
-          {/* Edit form inline */}
-          {isEditing&&<RoomForm initial={{name:r.name,subject:r.subject,color:r.color}} onSave={saveEdit} onCancel={()=>setEditRoom(null)} dk={dk}/>}
+  function save(){
+    if(!name.trim()) return;
+    onSave({name:name.trim(),subject:subject.trim(),year,term,teacher:teacher.trim()});
+  }
 
-          <div className={`rounded-2xl p-4 border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}
-            style={isEditing?{opacity:0.4,pointerEvents:"none"}:{}}>
-            <div className="flex items-center gap-3 mb-3">
-              {/* color badge → click to view students */}
-              <div onClick={()=>setSel(r)} className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-xs cursor-pointer flex-shrink-0" style={{background:r.color}}>{r.name}</div>
-              <div className="flex-1 min-w-0 cursor-pointer" onClick={()=>setSel(r)}>
-                <div className={`font-semibold truncate ${dk?"text-white":"text-gray-900"}`}>{r.subject}</div>
-                <div className={`text-xs mt-0.5 ${dk?"text-slate-400":"text-gray-500"}`}>{r.students} คน</div>
-              </div>
-              {/* action buttons */}
-              <div className="flex items-center gap-1.5 flex-shrink-0">
-                <div className="text-right mr-2">
-                  <div className={`text-base font-bold ${rt>=80?"text-emerald-500":rt>=60?"text-amber-500":"text-red-500"}`}>{rt}%</div>
-                  <div className={`text-[10px] ${dk?"text-slate-500":"text-gray-400"}`}>ส่งงาน</div>
-                </div>
-                <button onClick={e=>{e.stopPropagation();setEditRoom(r);setShowAdd(false);}}
-                  className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${dk?"bg-slate-700 text-slate-400 hover:text-cyan-400":"bg-gray-100 text-gray-400 hover:text-cyan-600"}`}>
-                  <Ic n="edit" s={15}/>
-                </button>
-                <button onClick={e=>{e.stopPropagation();setDeleteRoom(r);}}
-                  className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${dk?"bg-slate-700 text-slate-400 hover:text-red-400":"bg-gray-100 text-gray-400 hover:text-red-500"}`}>
-                  <Ic n="trash" s={15}/>
-                </button>
-              </div>
+  return(
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={e=>e.stopPropagation()}>
+        <div className="modal-title">{cls?'แก้ไขชั้นเรียน':'สร้างชั้นเรียนใหม่'}</div>
+        <div style={{display:'flex',flexDirection:'column',gap:12}}>
+          <div>
+            <label className="form-label">ชั้นเรียน *</label>
+            <input className="form-input" value={name} onChange={e=>setName(e.target.value)} placeholder="เช่น ม.1/1"/>
+          </div>
+          <div>
+            <label className="form-label">วิชา</label>
+            <input className="form-input" value={subject} onChange={e=>setSubject(e.target.value)} placeholder="เช่น ค21101 คณิตศาสตร์"/>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+            <div>
+              <label className="form-label">ปีการศึกษา</label>
+              <select className="form-input" value={year} onChange={e=>setYear(e.target.value)}>
+                {['2567','2568','2569'].map(y=><option key={y}>{y}</option>)}
+              </select>
             </div>
-            <div className={`h-2 rounded-full ${dk?"bg-slate-700":"bg-gray-100"} overflow-hidden`}>
-              <div className="h-full rounded-full transition-all" style={{width:`${rt}%`,background:r.color}}/>
-            </div>
-            <div className="flex gap-3 mt-3">
-              {[{l:"ส่งแล้ว",v:st.filter(s=>s.status==="submitted").length,c:"#10b981"},{l:"ส่งช้า",v:st.filter(s=>s.status==="late").length,c:"#f59e0b"},{l:"ไม่ส่ง",v:st.filter(s=>s.status==="not_submitted").length,c:"#ef4444"}].map(i=>(
-                <div key={i.l} className="flex items-center gap-1"><div className="w-2 h-2 rounded-full" style={{background:i.c}}/><span className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>{i.l} {i.v}</span></div>
-              ))}
+            <div>
+              <label className="form-label">ภาคเรียน</label>
+              <select className="form-input" value={term} onChange={e=>setTerm(e.target.value)}>
+                <option value="1">1</option><option value="2">2</option>
+              </select>
             </div>
           </div>
-        </div>);
-      })}
-      {rooms.length===0&&(
-        <div className={`text-center py-16 ${dk?"text-slate-500":"text-gray-400"}`}>
-          <div className="text-5xl mb-3 opacity-30">🏫</div>
-          <p className="text-sm">ยังไม่มีห้องเรียน กด "เพิ่มห้อง" เพื่อเริ่มต้น</p>
+          <div>
+            <label className="form-label">ครูผู้สอน</label>
+            <input className="form-input" value={teacher} onChange={e=>setTeacher(e.target.value)} placeholder="ชื่อครูผู้สอน"/>
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-ghost" onClick={onClose}>ยกเลิก</button>
+          <button className="btn btn-primary" onClick={save}>บันทึก</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   STUDENT MODAL — add students
+══════════════════════════════════════════════ */
+function StudentModal({onSave,onClose}){
+  const [mode,setMode]=useState('single');
+  const [name,setName]=useState('');
+  const [no,setNo]=useState('');
+  const [bulk,setBulk]=useState('');
+
+  function save(){
+    const list=[];
+    if(mode==='single'){
+      if(!name.trim()) return;
+      list.push({name:name.trim(),studentNo:no.trim()});
+    } else {
+      bulk.split('\n').forEach(line=>{
+        const parts=line.trim().split(/\t|,/);
+        const n=parts[0]?.trim();
+        if(n) list.push({name:n,studentNo:(parts[1]?.trim()||'')});
+      });
+    }
+    if(list.length) onSave(list);
+  }
+
+  return(
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={e=>e.stopPropagation()}>
+        <div className="modal-title">เพิ่มนักเรียน</div>
+        <div className="tab-bar" style={{marginBottom:16}}>
+          <button className={`tab-item${mode==='single'?' active':''}`} onClick={()=>setMode('single')}>เพิ่มทีละคน</button>
+          <button className={`tab-item${mode==='bulk'?' active':''}`} onClick={()=>setMode('bulk')}>วางรายชื่อ (หลายคน)</button>
+        </div>
+        {mode==='single'?(
+          <div style={{display:'flex',flexDirection:'column',gap:10}}>
+            <div>
+              <label className="form-label">ชื่อ-นามสกุล *</label>
+              <input className="form-input" value={name} onChange={e=>setName(e.target.value)} placeholder="เด็กชาย/เด็กหญิง ชื่อ นามสกุล"
+                onKeyDown={e=>{ if(e.key==='Enter') save(); }}/>
+            </div>
+            <div>
+              <label className="form-label">เลขประจำตัว</label>
+              <input className="form-input" value={no} onChange={e=>setNo(e.target.value)} placeholder="เช่น 001"/>
+            </div>
+          </div>
+        ):(
+          <div>
+            <label className="form-label">วางรายชื่อ (1 คนต่อบรรทัด, คั่นด้วย Tab หรือ , สำหรับเลขประจำตัว)</label>
+            <textarea className="form-input" rows={7} value={bulk} onChange={e=>setBulk(e.target.value)}
+              placeholder={"เด็กชาย ตัวอย่าง ทดสอบ\nเด็กหญิง ตัวอย่าง ทดสอบ,002\nเด็กชาย ตัวอย่าง สาม\t003"}/>
+          </div>
+        )}
+        <div className="modal-footer">
+          <button className="btn btn-ghost" onClick={onClose}>ยกเลิก</button>
+          <button className="btn btn-primary" onClick={save}>เพิ่ม</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   ASSIGNMENT MODAL — create assignment/check session
+══════════════════════════════════════════════ */
+function AssignmentModal({onSave,onClose}){
+  const [title,setTitle]=useState('');
+  const [date,setDate]=useState(today());
+  const [maxScore,setMaxScore]=useState('10');
+  const [topic,setTopic]=useState('');
+
+  function save(){
+    if(!title.trim()) return;
+    onSave({title:title.trim(),date,maxScore:Number(maxScore)||10,topic:topic.trim()});
+  }
+
+  return(
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={e=>e.stopPropagation()}>
+        <div className="modal-title">สร้างงาน/กิจกรรม</div>
+        <div style={{display:'flex',flexDirection:'column',gap:12}}>
+          <div>
+            <label className="form-label">ชื่องาน *</label>
+            <input className="form-input" value={title} onChange={e=>setTitle(e.target.value)} placeholder="เช่น ใบงาน 4.1, แบบฝึกหัด บทที่ 4"/>
+          </div>
+          <div>
+            <label className="form-label">หัวข้อ/เนื้อหา</label>
+            <input className="form-input" value={topic} onChange={e=>setTopic(e.target.value)} placeholder="เช่น ทศนิยม, เศษส่วน"/>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+            <div>
+              <label className="form-label">วันที่มอบหมาย</label>
+              <input className="form-input" type="date" value={date} onChange={e=>setDate(e.target.value)}/>
+            </div>
+            <div>
+              <label className="form-label">คะแนนเต็ม</label>
+              <input className="form-input" type="number" value={maxScore} onChange={e=>setMaxScore(e.target.value)} min="1"/>
+            </div>
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-ghost" onClick={onClose}>ยกเลิก</button>
+          <button className="btn btn-primary" onClick={save}>สร้าง</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   CHECK TABLE — main submission grid
+══════════════════════════════════════════════ */
+const STATUS_ORDER = ['none','submitted','late','absent'];
+const STATUS_LABEL = {none:'ยังไม่ส่ง',submitted:'ส่งแล้ว',late:'ส่งช้า',absent:'ขาด'};
+const STATUS_CLASS = {none:'',submitted:'submitted',late:'late',absent:'absent'};
+const STATUS_ICON  = {none:'',submitted:'✓',late:'!',absent:'✗'};
+
+function CheckTable({assignment,students,records,onToggle,onScore}){
+  const submitted=Object.values(records).filter(r=>r.status==='submitted').length;
+  const late=Object.values(records).filter(r=>r.status==='late').length;
+  const absent=Object.values(records).filter(r=>r.status==='absent').length;
+  const total=students.length||1;
+  const pct=Math.round(submitted/total*100);
+
+  function nextStatus(cur){
+    const i=STATUS_ORDER.indexOf(cur||'none');
+    return STATUS_ORDER[(i+1)%STATUS_ORDER.length];
+  }
+
+  return(
+    <div className="check-section">
+      {/* Stats */}
+      <div className="stat-grid" style={{marginBottom:16}}>
+        <div className="stat-card purple card">
+          <div className="stat-label">ทั้งหมด</div>
+          <div className="stat-value purple">{students.length}</div>
+          <div className="stat-sub">นักเรียน</div>
+        </div>
+        <div className="stat-card green card">
+          <div className="stat-label">ส่งแล้ว</div>
+          <div className="stat-value green">{submitted}</div>
+          <div className="progress-wrap"><div className="progress-bar" style={{width:pct+'%'}}/></div>
+        </div>
+        <div className="stat-card amber card">
+          <div className="stat-label">ส่งช้า</div>
+          <div className="stat-value amber">{late}</div>
+          <div className="stat-sub">คน</div>
+        </div>
+        <div className="stat-card red card">
+          <div className="stat-label">ไม่ส่ง/ขาด</div>
+          <div className="stat-value red">{absent+Object.values(records).filter(r=>!r.status||r.status==='none').length}</div>
+          <div className="stat-sub">คน</div>
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div className="legend" style={{marginBottom:12}}>
+        {STATUS_ORDER.map(s=>(
+          <div key={s} className="legend-item">
+            <div className="legend-dot" style={{
+              background:s==='submitted'?'#4f46e5':s==='late'?'#f59e0b':s==='absent'?'rgba(239,68,68,.3)':'rgba(209,213,219,.6)',
+              border:s==='none'?'2px solid rgba(209,213,219,.8)':undefined
+            }}/>
+            <span>{STATUS_LABEL[s]}</span>
+          </div>
+        ))}
+        <span style={{marginLeft:'auto',fontSize:12,color:'#9ca3af'}}>คลิกที่ช่องเพื่อเปลี่ยนสถานะ</span>
+      </div>
+
+      {students.length===0?(
+        <div className="empty-state card" style={{padding:'40px 20px'}}>
+          <div className="empty-icon">👥</div>
+          <div className="empty-text">ยังไม่มีนักเรียน</div>
+          <div className="empty-sub">กด "+ เพิ่มนักเรียน" ด้านบน</div>
+        </div>
+      ):(
+        <div className="card table-wrap">
+          <table className="main-table">
+            <thead>
+              <tr>
+                <th style={{width:44}}>#</th>
+                <th>ชื่อ-นามสกุล</th>
+                <th className="col-center" style={{width:110}}>สถานะ</th>
+                <th className="col-center" style={{width:80}}>คะแนน</th>
+                <th className="col-center" style={{width:80}}>/{assignment.maxScore||10}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {students.map((s,i)=>{
+                const rec=records[s.id]||{};
+                const st=rec.status||'none';
+                return(
+                  <tr key={s.id}>
+                    <td style={{color:'#9ca3af',fontSize:12,textAlign:'center'}}>{i+1}</td>
+                    <td>
+                      <div className="stu-name">{s.name}</div>
+                      {s.studentNo&&<div className="stu-no">เลขที่ {s.studentNo}</div>}
+                    </td>
+                    <td className="col-center">
+                      <div className="check-cell">
+                        <div className={`check-btn ${STATUS_CLASS[st]}`}
+                          onClick={()=>onToggle(s.id,nextStatus(st))}
+                          title={`${STATUS_LABEL[st]} → คลิกเพื่อเปลี่ยน`}>
+                          {STATUS_ICON[st]}
+                        </div>
+                        <span style={{fontSize:11,color:'#9ca3af',marginLeft:5,minWidth:44}}>{STATUS_LABEL[st]}</span>
+                      </div>
+                    </td>
+                    <td className="col-center">
+                      <input className="score-inp" type="number" min={0} max={assignment.maxScore||100}
+                        value={rec.score??''}
+                        onChange={e=>onScore(s.id,e.target.value)}
+                        placeholder="-"/>
+                    </td>
+                    <td className="col-center" style={{fontSize:12,color:'#9ca3af'}}>/{assignment.maxScore||10}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
-  </div>);
+  );
 }
 
-// ── ASSIGNMENT ──────────────────────────────────────────────────
-function AssignmentPage({rooms,asgns,setAsgns,students,setStudents,dk,fabTrigger}){
-  const[step,setStep]=useState(1);
-  const[room,setRoom]=useState(null);
-  const[asgn,setAsgn]=useState(null);
-  const[filter,setFilter]=useState("all");
-  const[q,setQ]=useState("");
-  const[showAdd,setShowAdd]=useState(false);
-  const[form,setForm]=useState({title:"",maxScore:"20",dueDate:""});
+/* ═══════════════════════════════════════════════
+   PDF EXPORT
+══════════════════════════════════════════════ */
+function exportPDF(cls,assignment,students,records){
+  const sub=students.length;
+  const late=Object.values(records).filter(r=>r.status==='late').length;
+  const absent=Object.values(records).filter(r=>r.status==='absent').length;
+  const none=Object.values(records).filter(r=>!r.status||r.status==='none').length;
+  const pct=Math.round(Object.values(records).filter(r=>r.status==='submitted').length/Math.max(students.length,1)*100);
 
-  useEffect(()=>{if(fabTrigger>0){if(room){setStep(2);setShowAdd(true);}else toast("เลือกห้องเรียนก่อน แล้วกด + เพิ่มงาน","info");}},[fabTrigger]);
+  const rows=students.map((s,i)=>{
+    const rec=records[s.id]||{};
+    const st=rec.status||'none';
+    const sym=st==='submitted'?'✓':st==='late'?'!':st==='absent'?'✗':'-';
+    const bg=st==='submitted'?'#d1fae5':st==='late'?'#fef3c7':st==='absent'?'#fee2e2':'#f9fafb';
+    const col=st==='submitted'?'#065f46':st==='late'?'#92400e':st==='absent'?'#991b1b':'#9ca3af';
+    const sc=rec.score!=null&&rec.score!==''?rec.score:'-';
+    return `<tr>
+      <td style="text-align:center;color:#9ca3af;font-size:12px">${i+1}</td>
+      <td><strong>${s.name}</strong>${s.studentNo?`<br><span style="font-size:11px;color:#9ca3af">เลขที่ ${s.studentNo}</span>`:''}</td>
+      <td style="text-align:center;background:${bg};color:${col};font-size:17px;font-weight:700">${sym}</td>
+      <td style="text-align:center;font-size:12px;color:#9ca3af">${STATUS_LABEL[st]}</td>
+      <td style="text-align:center;font-weight:700;font-size:15px">${sc}</td>
+      <td style="text-align:center;color:#9ca3af;font-size:12px">/${assignment.maxScore||10}</td>
+    </tr>`;
+  }).join('');
 
-  const roomAsgns=asgns.filter(a=>a.classroomId===room?.id);
-  const studs=(students[room?.id]||[]).filter(s=>{
-    if(filter==="not_submitted")return s.status==="not_submitted";
-    if(filter==="late")return s.status==="late";
-    if(filter==="submitted")return s.status==="submitted";
-    return true;
-  }).filter(s=>q===""||s.name.includes(q)||String(s.no).includes(q));
-
-  const upd=(sid,field,val)=>setStudents(prev=>({...prev,[room.id]:prev[room.id].map(s=>s.id===sid?{...s,[field]:val}:s)}));
-  const bulkSet=st=>{setStudents(prev=>({...prev,[room.id]:prev[room.id].map(s=>({...s,status:st}))}));toast(`อัพเดทสถานะทั้งหมดเป็น "${sLabel(st)}"`, "success");};
-  const autoScore=()=>{const max=parseInt(asgn?.maxScore||20);setStudents(prev=>({...prev,[room.id]:prev[room.id].map(s=>s.status!=="not_submitted"?{...s,score:max}:s)}));toast("ให้คะแนนเต็มทุกคนที่ส่งแล้ว","success");};
-  const addAsgn=()=>{if(!form.title)return;setAsgns(p=>[...p,{id:Date.now(),classroomId:room.id,...form,maxScore:parseInt(form.maxScore),createdAt:new Date().toISOString().split("T")[0]}]);setForm({title:"",maxScore:"20",dueDate:""});setShowAdd(false);toast("เพิ่มงานสำเร็จ","success");};
-
-  if(step===1)return(<div className="p-4 space-y-4 pb-24 lg:pb-6">
-    <p className={`text-sm ${dk?"text-slate-400":"text-gray-500"}`}>เลือกห้องเรียน</p>
-    {rooms.map(r=>(<button key={r.id} onClick={()=>{setRoom(r);setStep(2);}} className={`w-full text-left rounded-2xl p-4 border active:scale-[0.99] ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-xs" style={{background:r.color}}>{r.name}</div>
-        <div><div className={`font-semibold ${dk?"text-white":"text-gray-900"}`}>{r.subject}</div><div className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>{r.students} คน</div></div>
-        <Ic n="arr" s={18} c={`ml-auto ${dk?"text-slate-600":"text-gray-300"}`}/>
-      </div>
-    </button>))}
-  </div>);
-
-  if(step===2)return(<div className="p-4 space-y-4 pb-24 lg:pb-6">
-    <div className="flex items-center gap-3">
-      <button onClick={()=>setStep(1)} className={`w-9 h-9 rounded-xl flex items-center justify-center ${dk?"bg-slate-800 text-slate-400":"bg-gray-100 text-gray-600"}`}><Ic n="arr" s={18} c="rotate-180"/></button>
-      <div className="flex-1"><div className={`font-bold ${dk?"text-white":"text-gray-900"}`}>{room.name}</div><div className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>เลือกงานที่ต้องการเช็ค</div></div>
-      <button onClick={()=>setShowAdd(true)} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-500 text-white text-xs font-medium"><Ic n="plus" s={14}/> เพิ่มงาน</button>
+  const html=`<!DOCTYPE html><html lang="th"><head>
+  <meta charset="UTF-8">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap');
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Sarabun','TH Sarabun New',sans-serif;font-size:14px;color:#111;padding:28px}
+    h1{font-size:20px;font-weight:800;color:#1a1f2e;margin-bottom:4px}
+    .meta{font-size:13px;color:#6b7280;margin-bottom:20px}
+    .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+    .stat-box{padding:12px 14px;border-radius:12px;text-align:center}
+    .stat-box .lbl{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+    .stat-box .val{font-size:24px;font-weight:800}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    thead th{padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#fff;background:#4f46e5;border:1px solid #4338ca;white-space:nowrap}
+    tbody td{padding:9px 12px;border:1px solid #e5e7eb}
+    tbody tr:nth-child(even) td{background:#fafafa}
+    .legend{display:flex;gap:18px;font-size:12px;color:#6b7280;margin-top:14px}
+    .legend span{display:flex;align-items:center;gap:5px}
+    .dot{width:11px;height:11px;border-radius:3px;display:inline-block}
+    .sign-row{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:44px}
+    .sign-box{text-align:center;font-size:13px}
+    .sign-line{border-top:1px solid #9ca3af;padding-top:6px;margin-top:44px}
+    @media print{body{padding:12mm} .no-print{display:none} @page{size:A4;margin:15mm}}
+  </style></head><body>
+  <div style="text-align:center;margin-bottom:18px">
+    <div style="font-size:13px;color:#6b7280">โรงเรียนหล่มสักวิทยาคม สำนักงานเขตพื้นที่การศึกษามัธยมศึกษาเพชรบูรณ์</div>
+    <h1>แบบบันทึกการส่งงาน</h1>
+    <div class="meta">
+      ${cls?.subject?`วิชา: <strong>${cls.subject}</strong> &nbsp;|&nbsp; `:''}
+      ชั้น: <strong>${cls?.name||'-'}</strong> &nbsp;|&nbsp;
+      งาน: <strong>${assignment.title}</strong>
+      ${assignment.topic?` &nbsp;|&nbsp; หัวข้อ: ${assignment.topic}`:''}
+      <br>
+      วันที่: <strong>${formatThaiDate(assignment.date)}</strong>
+      &nbsp;|&nbsp; ปีการศึกษา ${cls?.year||'-'} ภาค ${cls?.term||'-'}
+      ${cls?.teacher?` &nbsp;|&nbsp; ครูผู้สอน: ${cls.teacher}`:''}
     </div>
-    {showAdd&&(<div className={`rounded-2xl p-4 border space-y-3 ${dk?"bg-slate-800 border-slate-700":"bg-cyan-50 border-cyan-200"}`}>
-      <div className={`text-sm font-semibold ${dk?"text-white":"text-gray-800"}`}>เพิ่มงานใหม่</div>
-      <input value={form.title} onChange={e=>setForm(p=>({...p,title:e.target.value}))} placeholder="ชื่องาน" className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none ${dk?"bg-slate-700 border-slate-600 text-white placeholder-slate-500":"bg-white border-gray-200"}`}/>
-      <div className="flex gap-2">
-        <input type="number" value={form.maxScore} onChange={e=>setForm(p=>({...p,maxScore:e.target.value}))} placeholder="คะแนนเต็ม" className={`flex-1 px-3 py-2.5 rounded-xl border text-sm outline-none ${dk?"bg-slate-700 border-slate-600 text-white":"bg-white border-gray-200"}`}/>
-        <input type="date" value={form.dueDate} onChange={e=>setForm(p=>({...p,dueDate:e.target.value}))} className={`flex-1 px-3 py-2.5 rounded-xl border text-sm outline-none ${dk?"bg-slate-700 border-slate-600 text-white":"bg-white border-gray-200"}`}/>
-      </div>
-      <div className="flex gap-2"><button onClick={addAsgn} className="flex-1 py-2 rounded-xl bg-cyan-500 text-white text-sm">บันทึก</button><button onClick={()=>setShowAdd(false)} className={`flex-1 py-2 rounded-xl text-sm ${dk?"bg-slate-700 text-slate-300":"bg-gray-100 text-gray-600"}`}>ยกเลิก</button></div>
-    </div>)}
-    {roomAsgns.length===0&&(<div className={`text-center py-12 ${dk?"text-slate-500":"text-gray-400"}`}><div className="text-4xl mb-3 opacity-30">📋</div><p className="text-sm">ยังไม่มีงาน กด "เพิ่มงาน" เพื่อเริ่มต้น</p></div>)}
-    {roomAsgns.map(a=>(<button key={a.id} onClick={()=>{setAsgn(a);setStep(3);}} className={`w-full text-left rounded-2xl p-4 border active:scale-[0.99] ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
-      <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center flex-shrink-0"><Ic n="file" s={18}/></div>
-        <div className="flex-1 min-w-0"><div className={`font-semibold text-sm ${dk?"text-white":"text-gray-900"}`}>{a.title}</div><div className={`text-xs mt-1 ${dk?"text-slate-400":"text-gray-500"}`}>เต็ม {a.maxScore} · กำหนด {a.dueDate||"ไม่กำหนด"}</div></div>
-        <Ic n="arr" s={18} c={dk?"text-slate-600":"text-gray-300"}/>
-      </div>
-    </button>))}
-  </div>);
+  </div>
+  <div class="stat-row">
+    <div class="stat-box" style="background:#ede9fe">
+      <div class="lbl" style="color:#5b21b6">นักเรียนทั้งหมด</div>
+      <div class="val" style="color:#4f46e5">${students.length}</div>
+    </div>
+    <div class="stat-box" style="background:#d1fae5">
+      <div class="lbl" style="color:#065f46">ส่งแล้ว</div>
+      <div class="val" style="color:#059669">${Object.values(records).filter(r=>r.status==='submitted').length} <span style="font-size:14px">(${pct}%)</span></div>
+    </div>
+    <div class="stat-box" style="background:#fef3c7">
+      <div class="lbl" style="color:#92400e">ส่งช้า</div>
+      <div class="val" style="color:#d97706">${late}</div>
+    </div>
+    <div class="stat-box" style="background:#fee2e2">
+      <div class="lbl" style="color:#991b1b">ไม่ส่ง/ขาด</div>
+      <div class="val" style="color:#dc2626">${absent+none}</div>
+    </div>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:40px">#</th>
+      <th style="text-align:left">ชื่อ-นามสกุล</th>
+      <th style="width:60px">การส่ง</th>
+      <th style="width:80px">สถานะ</th>
+      <th style="width:60px">คะแนน</th>
+      <th style="width:60px">เต็ม</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div class="legend">
+    <span><span class="dot" style="background:#4f46e5"></span> ✓ ส่งแล้ว</span>
+    <span><span class="dot" style="background:#f59e0b"></span> ! ส่งช้า</span>
+    <span><span class="dot" style="background:#ef4444;opacity:.4"></span> ✗ ขาด</span>
+    <span><span class="dot" style="background:#e5e7eb"></span> - ยังไม่ส่ง</span>
+    <span style="margin-left:auto">พิมพ์เมื่อ: ${new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>
+  </div>
+  <div class="sign-row">
+    <div class="sign-box">
+      <div class="sign-line">ลงชื่อ _________________________________ ครูผู้สอน</div>
+      <div style="margin-top:6px;color:#6b7280">(${cls?.teacher||'..................................'})</div>
+    </div>
+    <div class="sign-box">
+      <div class="sign-line">ลงชื่อ _________________________________ หัวหน้ากลุ่มสาระ</div>
+      <div style="margin-top:6px;color:#6b7280">(...................................)</div>
+    </div>
+  </div>
+  <div class="no-print" style="text-align:center;margin-top:30px">
+    <button onclick="window.print()" style="padding:11px 32px;background:#4f46e5;color:#fff;border:none;border-radius:10px;font-size:15px;font-family:inherit;cursor:pointer;font-weight:600">
+      🖨️ พิมพ์ / บันทึกเป็น PDF
+    </button>
+  </div>
+  </body></html>`;
 
-  const allSt=students[room.id]||[];
-  const summ={submitted:allSt.filter(s=>s.status==="submitted").length,late:allSt.filter(s=>s.status==="late").length,not_submitted:allSt.filter(s=>s.status==="not_submitted").length};
-  return(<div className="pb-24 lg:pb-6">
-    <div className={`sticky top-[57px] z-30 p-4 border-b ${dk?"bg-slate-900 border-slate-800":"bg-gray-50 border-gray-100"}`}>
-      <div className="flex items-center gap-3 mb-3">
-        <button onClick={()=>setStep(2)} className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${dk?"bg-slate-800 text-slate-400":"bg-white text-gray-600"} border ${dk?"border-slate-700":"border-gray-200"}`}><Ic n="arr" s={18} c="rotate-180"/></button>
-        <div className="flex-1 min-w-0"><div className={`font-bold text-sm truncate ${dk?"text-white":"text-gray-900"}`}>{asgn.title}</div><div className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>{room.name} · เต็ม {asgn.maxScore}</div></div>
-      </div>
-      <div className="flex gap-1.5 mb-3">
-        {[{k:"all",label:"ทั้งหมด",val:allSt.length,col:"cyan"},{k:"submitted",label:"ส่งแล้ว",val:summ.submitted,col:"emerald"},{k:"late",label:"ส่งช้า",val:summ.late,col:"amber"},{k:"not_submitted",label:"ไม่ส่ง",val:summ.not_submitted,col:"red"}].map(f=>(
-          <button key={f.k} onClick={()=>setFilter(f.k)} className={`flex-1 py-1.5 rounded-xl text-[10px] font-medium transition-all border ${filter===f.k?f.col==="emerald"?"bg-emerald-500 text-white border-emerald-500":f.col==="amber"?"bg-amber-500 text-white border-amber-500":f.col==="red"?"bg-red-500 text-white border-red-500":"bg-cyan-500 text-white border-cyan-500":dk?"bg-slate-800 text-slate-400 border-slate-700":"bg-white text-gray-500 border-gray-200"}`}>{f.label} {f.val}</button>
-        ))}
-      </div>
-      <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border mb-3 ${dk?"bg-slate-800 border-slate-700":"bg-white border-gray-200"}`}>
-        <Ic n="search" s={15} c={dk?"text-slate-500":"text-gray-400"}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="ค้นหา..." className={`flex-1 bg-transparent text-sm outline-none ${dk?"text-white placeholder-slate-500":"text-gray-900 placeholder-gray-400"}`}/>
-      </div>
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {[{label:"ส่งทุกคน",fn:()=>bulkSet("submitted"),col:"emerald"},{label:"ไม่ส่งทั้งหมด",fn:()=>bulkSet("not_submitted"),col:"red"},{label:"คะแนนเต็ม",fn:autoScore,col:"cyan"}].map(b=>(
-          <button key={b.label} onClick={b.fn} className={`flex-shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium active:scale-95 border ${b.col==="emerald"?"bg-emerald-500/10 text-emerald-500 border-emerald-500/30":b.col==="red"?"bg-red-500/10 text-red-500 border-red-500/30":"bg-cyan-500/10 text-cyan-500 border-cyan-500/30"}`}>{b.label}</button>
-        ))}
-      </div>
-    </div>
-    <div className="p-4 space-y-2">
-      {studs.map(s=>(<div key={s.id} className={`rounded-2xl p-3 border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">{s.no}</div>
-          <div className="flex-1 min-w-0"><div className={`text-sm font-medium truncate ${dk?"text-white":"text-gray-900"}`}>{s.name}</div></div>
-          <select value={s.status} onChange={e=>upd(s.id,"status",e.target.value)} className={`text-xs px-2 py-1.5 rounded-xl border outline-none cursor-pointer ${sCls(s.status,dk)}`} style={{background:"transparent"}}>
-            <option value="submitted">ส่งแล้ว</option><option value="late">ส่งช้า</option><option value="not_submitted">ไม่ส่ง</option><option value="pending">รอตรวจ</option>
-          </select>
-          <input type="number" value={s.score} min={0} max={asgn.maxScore} onChange={e=>upd(s.id,"score",Math.max(0,Math.min(parseInt(e.target.value)||0,asgn.maxScore)))} className={`w-14 text-center text-sm font-bold px-2 py-1.5 rounded-xl border outline-none ${dk?"bg-slate-700 border-slate-600 text-white":"bg-gray-50 border-gray-200 text-gray-900"}`}/>
-        </div>
-        <div className="mt-2 ml-12"><input value={s.note} onChange={e=>upd(s.id,"note",e.target.value)} placeholder="หมายเหตุ..." className={`w-full text-xs px-2 py-1.5 rounded-lg border outline-none ${dk?"bg-slate-700/50 border-slate-700 text-slate-300 placeholder-slate-600":"bg-gray-50 border-gray-100 text-gray-600"}`}/></div>
-      </div>))}
-    </div>
-  </div>);
+  const w=window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(()=>w.print(),900);
 }
 
-// ── REPORTS ─────────────────────────────────────────────────────
-function ReportsPage({rooms,students,asgns,dk}){
-  const[activeRoom,setActiveRoom]=useState(rooms[0]?.id);
-  const[viewMode,setViewMode]=useState("overview");
-  const[selStu,setSelStu]=useState(null);
-  const[q,setQ]=useState("");
-  const roomSt=students[activeRoom]||[];
-  const roomAsgns=asgns.filter(a=>a.classroomId===activeRoom);
-  const sub=roomSt.filter(s=>s.status==="submitted").length;
-  const late=roomSt.filter(s=>s.status==="late").length;
-  const notS=roomSt.filter(s=>s.status==="not_submitted").length;
-  const total=roomSt.length;
-  const stuMatrix=roomSt.map(s=>{
-    const records=roomAsgns.map((a,idx)=>{
-      const hash=(s.id*13+a.id*7+idx)%10;
-      const status=s.status==="not_submitted"&&idx===0?"not_submitted":hash<6?"submitted":hash<8?"late":"not_submitted";
-      return{assignmentId:a.id,title:a.title,status};
-    });
-    return{...s,records,submitCount:records.filter(r=>r.status==="submitted").length,lateCount:records.filter(r=>r.status==="late").length,notCount:records.filter(r=>r.status==="not_submitted").length};
-  });
-  const filteredStu=stuMatrix.filter(s=>q===""||s.name.includes(q)||String(s.no).includes(q));
+/* ═══════════════════════════════════════════════
+   MAIN APP
+══════════════════════════════════════════════ */
+function App(){
+  const [user,setUser]=useState(null);
+  const [authReady,setAuthReady]=useState(false);
+  const [classes,setClasses]=useState([]);
+  const [selectedClass,setSelectedClass]=useState(null);
+  const [assignments,setAssignments]=useState([]);
+  const [selectedAssignment,setSelectedAssignment]=useState(null);
+  const [students,setStudents]=useState([]);
+  const [records,setRecords]=useState({});
+  const [toast,setToast]=useState('');
+  const [modal,setModal]=useState(null); // 'newClass'|'editClass'|'newStudent'|'newAssignment'|'confirmDeleteClass'|'confirmDeleteAssignment'
+  const [loading,setLoading]=useState(false);
 
-  if(selStu){
-    const stu=stuMatrix.find(s=>s.id===selStu);if(!stu)return null;
-    const rt=roomAsgns.length>0?Math.round(((stu.submitCount+stu.lateCount)/roomAsgns.length)*100):0;
-    return(<div className="p-4 space-y-4 pb-24 lg:pb-6">
-      <div className="flex items-center gap-3">
-        <button onClick={()=>setSelStu(null)} className={`w-9 h-9 rounded-xl flex items-center justify-center ${dk?"bg-slate-800 text-slate-400":"bg-gray-100 text-gray-600"}`}><Ic n="arr" s={18} c="rotate-180"/></button>
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center text-white font-bold">{stu.no}</div>
-          <div><div className={`font-bold text-sm ${dk?"text-white":"text-gray-900"}`}>{stu.name}</div><div className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>เลขที่ {stu.no} · {rooms.find(r=>r.id===activeRoom)?.name}</div></div>
-        </div>
-      </div>
-      <div className="grid grid-cols-3 gap-3">
-        {[{label:"ส่งแล้ว",val:stu.submitCount,c:"text-emerald-500",bg:dk?"bg-emerald-500/10":"bg-emerald-50"},{label:"ส่งช้า",val:stu.lateCount,c:"text-amber-500",bg:dk?"bg-amber-500/10":"bg-amber-50"},{label:"ไม่ส่ง",val:stu.notCount,c:"text-red-500",bg:dk?"bg-red-500/10":"bg-red-50"}].map(item=>(
-          <div key={item.label} className={`rounded-2xl p-3 text-center border ${dk?"border-slate-700/50":"border-gray-100"} ${item.bg}`}><div className={`text-xl font-bold ${item.c}`}>{item.val}</div><div className={`text-xs mt-0.5 ${dk?"text-slate-400":"text-gray-500"}`}>{item.label}</div></div>
-        ))}
-      </div>
-      <div className={`rounded-2xl p-4 border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
-        <div className="flex justify-between items-center mb-2"><span className={`text-xs font-medium ${dk?"text-slate-400":"text-gray-500"}`}>อัตราการส่งงาน</span><span className="text-xs font-bold text-cyan-500">{rt}%</span></div>
-        <div className={`h-3 rounded-full ${dk?"bg-slate-700":"bg-gray-100"} overflow-hidden`}><div className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-teal-400" style={{width:`${rt}%`}}/></div>
-      </div>
-      <div className={`rounded-2xl border overflow-hidden ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
-        <div className={`px-4 py-3 border-b text-xs font-semibold uppercase tracking-wide ${dk?"border-slate-700/50 text-slate-400":"border-gray-50 text-gray-400"}`}>งานทั้งหมด {roomAsgns.length} ชิ้น</div>
-        {stu.records.length===0&&<div className={`p-8 text-center text-sm ${dk?"text-slate-500":"text-gray-400"}`}>ยังไม่มีงานในห้องนี้</div>}
-        {stu.records.map((r,idx)=>(<div key={r.assignmentId} className={`flex items-center gap-3 px-4 py-3.5 ${idx<stu.records.length-1?dk?"border-b border-slate-700/30":"border-b border-gray-50":""}`}>
-          <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${r.status==="submitted"?"bg-emerald-500/15 text-emerald-500":r.status==="late"?"bg-amber-500/15 text-amber-500":"bg-red-500/15 text-red-400"}`}><Ic n={r.status==="not_submitted"?"x":"check"} s={15}/></div>
-          <div className={`flex-1 min-w-0 text-sm truncate ${dk?"text-slate-200":"text-gray-800"}`}>{r.title}</div>
-          <span className={`text-xs px-2.5 py-1 rounded-lg border font-medium flex-shrink-0 ${sCls(r.status,dk)}`}>{sLabel(r.status)}</span>
-        </div>))}
-      </div>
-    </div>);
+  const showToast=(msg)=>{ setToast(msg); };
+
+  /* Auth listener */
+  useEffect(()=>{
+    const unsub=window._fb.auth.onAuthStateChanged(u=>{ setUser(u); setAuthReady(true); });
+    return unsub;
+  },[]);
+
+  /* Hide loading screen */
+  useEffect(()=>{
+    if(authReady) document.getElementById('app-loading').style.display='none';
+  },[authReady]);
+
+  /* Load classes */
+  useEffect(()=>{
+    if(!user) return;
+    const unsub=window._fb.db.collection('users').doc(user.uid).collection('classes')
+      .orderBy('createdAt','desc')
+      .onSnapshot(snap=>{
+        const list=snap.docs.map(d=>({id:d.id,...d.data()}));
+        setClasses(list);
+        if(list.length && !selectedClass) setSelectedClass(list[0]);
+      });
+    return unsub;
+  },[user]);
+
+  /* Load assignments for selected class */
+  useEffect(()=>{
+    if(!user||!selectedClass) return;
+    setAssignments([]); setSelectedAssignment(null);
+    const unsub=window._fb.db.collection('users').doc(user.uid)
+      .collection('classes').doc(selectedClass.id)
+      .collection('assignments')
+      .orderBy('createdAt','desc')
+      .onSnapshot(snap=>{
+        const list=snap.docs.map(d=>({id:d.id,...d.data()}));
+        setAssignments(list);
+        if(list.length) setSelectedAssignment(list[0]);
+      });
+    return unsub;
+  },[user,selectedClass?.id]);
+
+  /* Load students */
+  useEffect(()=>{
+    if(!user||!selectedClass) return;
+    const unsub=window._fb.db.collection('users').doc(user.uid)
+      .collection('classes').doc(selectedClass.id)
+      .collection('students')
+      .orderBy('order','asc')
+      .onSnapshot(snap=>{ setStudents(snap.docs.map(d=>({id:d.id,...d.data()}))); });
+    return unsub;
+  },[user,selectedClass?.id]);
+
+  /* Load records for selected assignment */
+  useEffect(()=>{
+    if(!user||!selectedClass||!selectedAssignment) return;
+    setRecords({});
+    const unsub=window._fb.db.collection('users').doc(user.uid)
+      .collection('classes').doc(selectedClass.id)
+      .collection('assignments').doc(selectedAssignment.id)
+      .collection('records')
+      .onSnapshot(snap=>{
+        const map={};
+        snap.docs.forEach(d=>{ map[d.id]=d.data(); });
+        setRecords(map);
+      });
+    return unsub;
+  },[user,selectedClass?.id,selectedAssignment?.id]);
+
+  /* ── Actions ── */
+  async function createClass(data){
+    setModal(null);
+    const ref=window._fb.db.collection('users').doc(user.uid).collection('classes');
+    const doc=await ref.add({...data,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    setSelectedClass({id:doc.id,...data});
+    showToast('สร้างชั้นเรียน '+data.name+' แล้ว');
   }
 
-  return(<div className="p-4 space-y-4 pb-24 lg:pb-6">
-    <div className="flex gap-2 overflow-x-auto pb-1">
-      {rooms.map(r=>(<button key={r.id} onClick={()=>{setActiveRoom(r.id);setViewMode("overview");setSelStu(null);}} className="flex-shrink-0 px-4 py-2 rounded-xl text-xs font-medium transition-all border" style={activeRoom===r.id?{background:r.color,color:"white",borderColor:r.color,boxShadow:`0 4px 12px ${r.color}44`}:{borderColor:dk?"#334155":"#e5e7eb",color:dk?"#94a3b8":"#6b7280",background:"transparent"}}>{r.name}</button>))}
-    </div>
-    <div className={`flex rounded-xl p-1 ${dk?"bg-slate-800":"bg-gray-100"}`}>
-      {[{id:"overview",label:"ภาพรวมห้อง"},{id:"student",label:"รายคน"}].map(m=>(<button key={m.id} onClick={()=>setViewMode(m.id)} className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${viewMode===m.id?"bg-cyan-500 text-white shadow-sm":dk?"text-slate-400":"text-gray-500"}`}>{m.label}</button>))}
-    </div>
+  async function updateClass(data){
+    setModal(null);
+    await window._fb.db.collection('users').doc(user.uid).collection('classes').doc(selectedClass.id).update(data);
+    setSelectedClass(c=>({...c,...data}));
+    showToast('อัปเดตข้อมูลชั้นเรียนแล้ว');
+  }
 
-    {viewMode==="overview"&&(<>
-      <div className="grid grid-cols-3 gap-3"><Card label="ส่งแล้ว" value={sub} icon="check" color="#10b981" dk={dk}/><Card label="ส่งช้า" value={late} icon="clock" color="#f59e0b" dk={dk}/><Card label="ไม่ส่ง" value={notS} icon="x" color="#ef4444" dk={dk}/></div>
-      <div className={`rounded-2xl p-4 border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
-        <div className={`text-sm font-semibold mb-4 ${dk?"text-white":"text-gray-800"}`}>สัดส่วนการส่งงาน</div>
-        <div className="flex items-center gap-6">
-          <svg viewBox="0 0 120 120" className="w-28 h-28 flex-shrink-0">
-            {(()=>{const data=[{val:sub,color:"#10b981"},{val:late,color:"#f59e0b"},{val:notS,color:"#ef4444"}];let cum=0;const tot=sub+late+notS||1;return data.map((d,i)=>{const pct=d.val/tot,sa=cum*2*Math.PI-Math.PI/2,ea=(cum+pct)*2*Math.PI-Math.PI/2,x1=60+50*Math.cos(sa),y1=60+50*Math.sin(sa),x2=60+50*Math.cos(ea),y2=60+50*Math.sin(ea);cum+=pct;if(d.val===0)return null;return<path key={i} d={`M 60 60 L ${x1} ${y1} A 50 50 0 ${pct>0.5?1:0} 1 ${x2} ${y2} Z`} fill={d.color}/>;});})()}
-            <circle cx="60" cy="60" r="32" fill={dk?"#1e293b":"#fff"}/><text x="60" y="58" textAnchor="middle" fill={dk?"#fff":"#111"} fontSize="13" fontWeight="bold">{total}</text><text x="60" y="72" textAnchor="middle" fill={dk?"#64748b":"#9ca3af"} fontSize="8">คน</text>
+  async function deleteClass(){
+    setModal(null);
+    await window._fb.db.collection('users').doc(user.uid).collection('classes').doc(selectedClass.id).delete();
+    setSelectedClass(null);
+    showToast('ลบชั้นเรียนแล้ว');
+  }
+
+  async function addStudents(list){
+    setModal(null);
+    const base=window._fb.db.collection('users').doc(user.uid).collection('classes').doc(selectedClass.id).collection('students');
+    const batch=window._fb.db.batch();
+    list.forEach((s,i)=>{
+      const ref=base.doc();
+      batch.set(ref,{...s,order:students.length+i,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    });
+    await batch.commit();
+    showToast(`เพิ่มนักเรียน ${list.length} คนแล้ว`);
+  }
+
+  async function deleteStudent(sid){
+    await window._fb.db.collection('users').doc(user.uid).collection('classes').doc(selectedClass.id).collection('students').doc(sid).delete();
+    showToast('ลบนักเรียนแล้ว');
+  }
+
+  async function createAssignment(data){
+    setModal(null);
+    const ref=window._fb.db.collection('users').doc(user.uid).collection('classes').doc(selectedClass.id).collection('assignments');
+    const doc=await ref.add({...data,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    setSelectedAssignment({id:doc.id,...data});
+    showToast('สร้างงาน "'+data.title+'" แล้ว');
+  }
+
+  async function deleteAssignment(){
+    setModal(null);
+    await window._fb.db.collection('users').doc(user.uid).collection('classes').doc(selectedClass.id).collection('assignments').doc(selectedAssignment.id).delete();
+    setSelectedAssignment(null);
+    showToast('ลบงานแล้ว');
+  }
+
+  async function toggleStatus(studentId,newStatus){
+    const path=window._fb.db.collection('users').doc(user.uid)
+      .collection('classes').doc(selectedClass.id)
+      .collection('assignments').doc(selectedAssignment.id)
+      .collection('records').doc(studentId);
+    await path.set({status:newStatus},{ merge:true });
+  }
+
+  async function setScore(studentId,score){
+    const path=window._fb.db.collection('users').doc(user.uid)
+      .collection('classes').doc(selectedClass.id)
+      .collection('assignments').doc(selectedAssignment.id)
+      .collection('records').doc(studentId);
+    await path.set({score:score===''?null:Number(score)},{merge:true});
+  }
+
+  async function markAll(status){
+    const batch=window._fb.db.batch();
+    students.forEach(s=>{
+      const ref=window._fb.db.collection('users').doc(user.uid)
+        .collection('classes').doc(selectedClass.id)
+        .collection('assignments').doc(selectedAssignment.id)
+        .collection('records').doc(s.id);
+      batch.set(ref,{status},{merge:true});
+    });
+    await batch.commit();
+    showToast(`ทำเครื่องหมาย "${STATUS_LABEL[status]}" ทุกคนแล้ว`);
+  }
+
+  function signOut(){ window._fb.auth.signOut(); }
+
+  /* ── Render ── */
+  if(!authReady) return null;
+  if(!user) return <LoginScreen onLogin={()=>{}}/>;
+
+  return(
+    <div className="app-wrap">
+      {/* Topbar */}
+      <div className="topbar">
+        <div className="topbar-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
           </svg>
-          <div className="space-y-3 flex-1">
-            {[{label:"ส่งแล้ว",val:sub,color:"#10b981"},{label:"ส่งช้า",val:late,color:"#f59e0b"},{label:"ไม่ส่ง",val:notS,color:"#ef4444"}].map(i=>{const pct=total?Math.round((i.val/total)*100):0;return(<div key={i.label}><div className="flex items-center justify-between mb-1"><div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full" style={{background:i.color}}/><span className={`text-xs ${dk?"text-slate-400":"text-gray-600"}`}>{i.label}</span></div><span className={`text-xs font-bold ${dk?"text-white":"text-gray-900"}`}>{i.val} ({pct}%)</span></div><div className={`h-1.5 rounded-full ${dk?"bg-slate-700":"bg-gray-100"} overflow-hidden`}><div className="h-full rounded-full" style={{width:`${pct}%`,background:i.color}}/></div></div>);})}
-          </div>
+          ClassCheck Pro
         </div>
+        <div className="topbar-spacer"/>
+        <span style={{fontSize:13,color:'#6b7280',maxWidth:180,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+          {user.displayName||user.email}
+        </span>
+        <button className="btn btn-ghost btn-sm" onClick={signOut}>ออกจากระบบ</button>
       </div>
-      {roomAsgns.length>0&&(<div className={`rounded-2xl p-4 border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
-        <div className={`text-sm font-semibold mb-4 ${dk?"text-white":"text-gray-800"}`}>การส่งงานแต่ละชิ้น</div>
-        <div className="space-y-4">
-          {roomAsgns.map(a=>{const seed=a.id*7,subC=Math.max(0,Math.round(total*(0.6+(seed%30)/100))),lateC=Math.max(0,Math.round(total*(0.05+(seed%10)/100))),notC=Math.max(0,total-subC-lateC),tot2=subC+lateC+notC||1,sp=Math.round((subC/tot2)*100),lp=Math.round((lateC/tot2)*100),np=100-sp-lp;return(<div key={a.id}><div className="flex items-center justify-between mb-1.5"><div className={`text-xs font-medium truncate flex-1 mr-2 ${dk?"text-slate-300":"text-gray-700"}`}>{a.title}</div><span className={`text-xs font-bold ${sp+lp>=80?"text-emerald-500":sp+lp>=60?"text-amber-500":"text-red-500"}`}>{sp+lp}%</span></div><div className={`h-5 rounded-lg overflow-hidden flex ${dk?"bg-slate-700":"bg-gray-100"}`}>{sp>0&&<div className="h-full bg-emerald-500 flex items-center justify-center" style={{width:`${sp}%`}}>{sp>8&&<span className="text-white text-[10px] font-bold">{subC}</span>}</div>}{lp>0&&<div className="h-full bg-amber-400 flex items-center justify-center" style={{width:`${lp}%`}}>{lp>8&&<span className="text-white text-[10px] font-bold">{lateC}</span>}</div>}{np>0&&<div className="h-full bg-red-400 flex items-center justify-center" style={{width:`${np}%`}}>{np>8&&<span className="text-white text-[10px] font-bold">{notC}</span>}</div>}</div></div>);})}
-        </div>
-        <div className="flex gap-4 mt-3">{[{l:"ส่งแล้ว",c:"#10b981"},{l:"ส่งช้า",c:"#f59e0b"},{l:"ไม่ส่ง",c:"#ef4444"}].map(x=>(<div key={x.l} className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm" style={{background:x.c}}/><span className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>{x.l}</span></div>))}</div>
-      </div>)}
-      <div className={`rounded-2xl border overflow-hidden ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
-        <div className={`px-4 py-3 border-b flex items-center gap-2 ${dk?"border-slate-700/50":"border-gray-50"}`}><div className="w-2 h-2 rounded-full bg-red-500"/><span className={`text-sm font-semibold ${dk?"text-white":"text-gray-800"}`}>นักเรียนที่ไม่ส่งงาน ({notS} คน)</span></div>
-        {roomSt.filter(s=>s.status==="not_submitted").length===0?<div className={`p-6 text-center text-sm ${dk?"text-slate-500":"text-gray-400"}`}>🎉 ส่งงานครบทุกคน!</div>:roomSt.filter(s=>s.status==="not_submitted").map((s,idx,arr)=>(<div key={s.id} onClick={()=>{setViewMode("student");setSelStu(s.id);}} className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-all ${dk?"hover:bg-slate-700/40":"hover:bg-gray-50"} ${idx<arr.length-1?dk?"border-b border-slate-700/30":"border-b border-gray-50":""}`}><div className="w-7 h-7 rounded-full bg-red-500/15 text-red-500 flex items-center justify-center text-xs font-bold">{s.no}</div><div className={`flex-1 text-xs truncate ${dk?"text-slate-300":"text-gray-700"}`}>{s.name}</div><Ic n="arr" s={14} c={dk?"text-slate-600":"text-gray-300"}/></div>))}
-      </div>
-    </>)}
 
-    {viewMode==="student"&&(<>
-      <div className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border ${dk?"bg-slate-800 border-slate-700":"bg-white border-gray-200"}`}><Ic n="search" s={15} c={dk?"text-slate-500":"text-gray-400"}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="ค้นหาชื่อหรือเลขที่..." className={`flex-1 bg-transparent text-sm outline-none ${dk?"text-white placeholder-slate-500":"text-gray-900 placeholder-gray-400"}`}/></div>
-      <div className="space-y-2">
-        {filteredStu.map(s=>{const rt2=roomAsgns.length>0?Math.round(((s.submitCount+s.lateCount)/roomAsgns.length)*100):0;return(<button key={s.id} onClick={()=>setSelStu(s.id)} className={`w-full text-left rounded-2xl p-3 border active:scale-[0.99] ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">{s.no}</div>
-            <div className="flex-1 min-w-0"><div className={`text-sm font-medium truncate ${dk?"text-white":"text-gray-900"}`}>{s.name}</div><div className="flex gap-3 mt-1"><span className="text-[10px] text-emerald-500 font-medium">✓ {s.submitCount}</span><span className="text-[10px] text-amber-500 font-medium">⏱ {s.lateCount}</span><span className="text-[10px] text-red-400 font-medium">✗ {s.notCount}</span></div></div>
-            <div className="flex items-center gap-2"><span className={`text-sm font-bold ${rt2>=80?"text-emerald-500":rt2>=60?"text-amber-500":"text-red-500"}`}>{rt2}%</span><Ic n="arr" s={15} c={dk?"text-slate-600":"text-gray-300"}/></div>
-          </div>
-          {roomAsgns.length>0&&(<div className={`mt-2 h-1.5 rounded-full ${dk?"bg-slate-700":"bg-gray-100"} overflow-hidden flex`}><div className="h-full bg-emerald-500" style={{width:`${(s.submitCount/roomAsgns.length)*100}%`}}/><div className="h-full bg-amber-400" style={{width:`${(s.lateCount/roomAsgns.length)*100}%`}}/><div className="h-full bg-red-400" style={{width:`${(s.notCount/roomAsgns.length)*100}%`}}/></div>)}
-        </button>);})}
-      </div>
-    </>)}
-  </div>);
-}
-
-// ── SHARE ───────────────────────────────────────────────────────
-function SharePage({rooms,students,dk}){
-  const[showQR,setShowQR]=useState(false);
-  const[activeRoom,setActiveRoom]=useState(rooms[0]?.id);
-  const roomSt=students[activeRoom]||[];
-  const sub=roomSt.filter(s=>s.status!=="not_submitted").length;
-  const rate=roomSt.length?Math.round((sub/roomSt.length)*100):0;
-  return(<div className="p-4 space-y-5 pb-24 lg:pb-6">
-    <div className={`rounded-2xl p-4 border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
-      <div className={`text-xs font-semibold mb-3 uppercase tracking-wide ${dk?"text-slate-400":"text-gray-500"}`}>Preview การแชร์</div>
-      <div className="flex gap-2 mb-3 overflow-x-auto pb-1">{rooms.map(r=>(<button key={r.id} onClick={()=>setActiveRoom(r.id)} className="flex-shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all" style={activeRoom===r.id?{background:r.color,color:"white",borderColor:r.color}:{borderColor:dk?"#334155":"#e5e7eb",color:dk?"#94a3b8":"#6b7280"}}>{r.name}</button>))}</div>
-      <div className="rounded-2xl overflow-hidden border border-cyan-500/30"><div className="h-2 bg-gradient-to-r from-cyan-500 to-teal-400"/>
-        <div className="p-4 bg-gradient-to-br from-cyan-500/5 to-teal-500/5">
-          <div className="flex items-center gap-2 mb-3"><div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center"><Ic n="zap" s={16} c="text-white"/></div><div><div className={`text-xs font-bold ${dk?"text-white":"text-gray-900"}`}>AssignCheck Pro</div><div className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>รายงานการส่งงาน</div></div></div>
-          <div className={`text-sm font-bold mb-1 ${dk?"text-white":"text-gray-900"}`}>{rooms.find(r=>r.id===activeRoom)?.name} · {rooms.find(r=>r.id===activeRoom)?.subject}</div>
-          <div className="flex gap-4 text-xs"><span className={dk?"text-slate-400":"text-gray-500"}>ส่งงาน {sub}/{roomSt.length} คน</span><span className={`font-bold ${rate>=80?"text-emerald-500":rate>=60?"text-amber-500":"text-red-500"}`}>{rate}%</span></div>
-          <div className={`mt-2 h-2 rounded-full ${dk?"bg-slate-700":"bg-gray-200"} overflow-hidden`}><div className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-teal-400" style={{width:`${rate}%`}}/></div>
-        </div>
-      </div>
-    </div>
-    <div className={`rounded-2xl p-4 border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
-      <div className={`text-sm font-semibold mb-4 ${dk?"text-white":"text-gray-800"}`}>แชร์ผ่าน</div>
-      <div className="grid grid-cols-4 gap-3">
-        {[{label:"LINE",color:"#00B900",bg:"#00B90015",icon:"share"},{label:"Facebook",color:"#1877F2",bg:"#1877F215",icon:"share"},{label:"Email",color:"#ea4335",bg:"#ea433515",icon:"mail"},{label:"QR Code",color:"#6366f1",bg:"#6366f115",icon:"copy",fn:()=>setShowQR(true)},{label:"Copy Link",color:"#06b6d4",bg:"#06b6d415",icon:"copy",fn:()=>toast("คัดลอกลิงก์แล้ว!","success")},{label:"PDF",color:"#10b981",bg:"#10b98115",icon:"dl"},{label:"CSV",color:"#f59e0b",bg:"#f59e0b15",icon:"dl"},{label:"Excel",color:"#22c55e",bg:"#22c55e15",icon:"dl"}].map(a=>(
-          <button key={a.label} onClick={a.fn||(()=>toast(`แชร์ผ่าน ${a.label}`,"success"))} className="flex flex-col items-center gap-2 p-3 rounded-2xl active:scale-95 transition-all" style={{background:a.bg}}>
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background:a.color+"22",color:a.color}}><Ic n={a.icon} s={20}/></div>
-            <span className={`text-xs font-medium ${dk?"text-slate-300":"text-gray-700"}`}>{a.label}</span>
+      <div className="main-body">
+        {/* Sidebar */}
+        <div className="sidebar">
+          <div className="sidebar-section">ชั้นเรียน</div>
+          {classes.map(c=>(
+            <button key={c.id} className={`sidebar-item${selectedClass?.id===c.id?' active':''}`}
+              onClick={()=>setSelectedClass(c)}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>
+              <span style={{flex:1,textAlign:'left'}}>{c.name}</span>
+              {c.subject&&<span className="badge badge-purple" style={{fontSize:10,padding:'2px 6px'}}>{c.subject.slice(0,6)}</span>}
+            </button>
+          ))}
+          <button className="btn btn-ghost sidebar-item sidebar-add" onClick={()=>setModal('newClass')}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            เพิ่มชั้นเรียน
           </button>
-        ))}
-      </div>
-    </div>
-    {showQR&&(<div className="fixed inset-0 z-50 flex items-end lg:items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={()=>setShowQR(false)}>
-      <div className={`w-full max-w-sm rounded-3xl p-6 text-center ${dk?"bg-slate-800":"bg-white"} shadow-2xl`} onClick={e=>e.stopPropagation()}>
-        <div className={`text-base font-bold mb-4 ${dk?"text-white":"text-gray-900"}`}>QR Code แชร์ผล</div>
-        <div className="w-48 h-48 mx-auto bg-white rounded-2xl p-3 shadow-lg mb-4">
-          <svg viewBox="0 0 100 100" className="w-full h-full">
-            {Array.from({length:10},(_,row)=>Array.from({length:10},(_,col)=>{const d=(row+col*3+row*col)%3!==0;return d?<rect key={`${row}-${col}`} x={col*10} y={row*10} width="10" height="10" fill="#0e7490"/>:null;}))}
-            <rect x="5" y="5" width="25" height="25" rx="3" fill="#0e7490"/><rect x="9" y="9" width="17" height="17" rx="2" fill="white"/><rect x="12" y="12" width="11" height="11" rx="1" fill="#0e7490"/>
-            <rect x="70" y="5" width="25" height="25" rx="3" fill="#0e7490"/><rect x="74" y="9" width="17" height="17" rx="2" fill="white"/><rect x="77" y="12" width="11" height="11" rx="1" fill="#0e7490"/>
-            <rect x="5" y="70" width="25" height="25" rx="3" fill="#0e7490"/><rect x="9" y="74" width="17" height="17" rx="2" fill="white"/><rect x="12" y="77" width="11" height="11" rx="1" fill="#0e7490"/>
-          </svg>
+
+          {selectedClass && <>
+            <div className="sidebar-section" style={{marginTop:8}}>งาน / กิจกรรม</div>
+            {assignments.map(a=>(
+              <button key={a.id} className={`sidebar-item${selectedAssignment?.id===a.id?' active':''}`}
+                onClick={()=>setSelectedAssignment(a)}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span style={{flex:1,textAlign:'left',fontSize:13}}>{a.title}</span>
+              </button>
+            ))}
+            <button className="btn btn-ghost sidebar-item sidebar-add" onClick={()=>setModal('newAssignment')}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              เพิ่มงาน
+            </button>
+          </>}
         </div>
-        <div className={`text-xs mb-4 ${dk?"text-slate-400":"text-gray-500"}`}>สแกนเพื่อดูรายงานการส่งงาน</div>
-        <button onClick={()=>setShowQR(false)} className="w-full py-3 rounded-2xl bg-cyan-500 text-white font-medium">ปิด</button>
-      </div>
-    </div>)}
-  </div>);
-}
 
-// ── SETTINGS ────────────────────────────────────────────────────
-function SettingsPage({dk,toggleDk}){
-  const[notif,setNotif]=useState(true);
-  const[autoSave,setAutoSave]=useState(true);
-  function Toggle({on,toggle}){return(<button onClick={toggle} className={`w-12 h-6 rounded-full transition-all relative ${on?"bg-cyan-500":dk?"bg-slate-700":"bg-gray-200"}`}><div className={`w-5 h-5 rounded-full bg-white shadow-sm absolute top-0.5 transition-all ${on?"left-6":"left-0.5"}`}/></button>);}
-  return(<div className="p-4 space-y-5 pb-24 lg:pb-6">
-    <div className={`rounded-2xl p-4 border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
-      <div className="flex items-center gap-4">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-cyan-500/30">ธ</div>
-        <div><div className={`font-bold ${dk?"text-white":"text-gray-900"}`}>นายธนกฤต</div><div className={`text-sm ${dk?"text-slate-400":"text-gray-500"}`}>ครูคณิตศาสตร์</div><div className={`text-xs mt-1 ${dk?"text-slate-500":"text-gray-400"}`}>โรงเรียนหล่มสักวิทยาคม · สพม.เพชรบูรณ์</div></div>
+        {/* Main content */}
+        <div className="main-content">
+          {!selectedClass?(
+            <div className="empty-state" style={{paddingTop:80}}>
+              <div className="empty-icon">📋</div>
+              <div className="empty-text">เลือกหรือสร้างชั้นเรียน</div>
+              <div className="empty-sub">เพิ่มชั้นเรียนจากแถบเมนูด้านซ้าย</div>
+              <button className="btn btn-primary" style={{marginTop:20}} onClick={()=>setModal('newClass')}>+ สร้างชั้นเรียนแรก</button>
+            </div>
+          ):(
+            <div style={{animation:'fadeIn .3s ease'}}>
+              {/* Page header */}
+              <div className="page-header">
+                <div className="page-title">
+                  {selectedClass.name}
+                  {selectedClass.subject&&<span className="badge badge-purple">{selectedClass.subject}</span>}
+                  {selectedAssignment&&<span className="badge badge-gray" style={{fontWeight:500}}>{selectedAssignment.title}</span>}
+                </div>
+                <div style={{fontSize:13,color:'#6b7280',marginTop:4}}>
+                  ปีการศึกษา {selectedClass.year} ภาค {selectedClass.term}
+                  {selectedClass.teacher&&` · ครู${selectedClass.teacher}`}
+                  {selectedAssignment?.date&&` · ${formatThaiDate(selectedAssignment.date)}`}
+                </div>
+                <div className="page-actions">
+                  <button className="btn btn-ghost btn-sm" onClick={()=>setModal('newStudent')}>+ เพิ่มนักเรียน</button>
+                  {selectedAssignment&&<>
+                    <button className="btn btn-ghost btn-sm" onClick={()=>markAll('submitted')}>✓ ทำเครื่องหมายทุกคน</button>
+                    <button className="btn btn-ghost btn-sm" onClick={()=>markAll('none')}>↺ รีเซ็ตทั้งหมด</button>
+                    <button className="btn btn-success btn-sm" onClick={()=>exportPDF(selectedClass,selectedAssignment,students,records)}>
+                      📄 ส่งออก PDF
+                    </button>
+                    <button className="btn btn-ghost btn-sm" onClick={()=>setModal('editClass')}>⚙ แก้ไขชั้นเรียน</button>
+                    <button className="btn btn-ghost btn-sm" style={{color:'#dc2626'}} onClick={()=>setModal('confirmDeleteAssignment')}>🗑 ลบงานนี้</button>
+                  </>}
+                  {!selectedAssignment&&<button className="btn btn-primary btn-sm" onClick={()=>setModal('newAssignment')}>+ สร้างงานแรก</button>}
+                </div>
+              </div>
+
+              {/* Assignment tabs */}
+              {assignments.length>1&&(
+                <div className="tab-bar">
+                  {assignments.map(a=>(
+                    <button key={a.id} className={`tab-item${selectedAssignment?.id===a.id?' active':''}`}
+                      onClick={()=>setSelectedAssignment(a)}>
+                      {a.title}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {selectedAssignment?(
+                <CheckTable
+                  assignment={selectedAssignment}
+                  students={students}
+                  records={records}
+                  onToggle={toggleStatus}
+                  onScore={setScore}
+                />
+              ):(
+                <div className="empty-state card" style={{marginTop:20,padding:'50px 20px'}}>
+                  <div className="empty-icon">📝</div>
+                  <div className="empty-text">ยังไม่มีงาน</div>
+                  <div className="empty-sub">กด "+ เพิ่มงาน" เพื่อสร้างงานหรือกิจกรรมแรก</div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Modals */}
+      {modal==='newClass'&&<ClassModal onSave={createClass} onClose={()=>setModal(null)}/>}
+      {modal==='editClass'&&<ClassModal cls={selectedClass} onSave={updateClass} onClose={()=>setModal(null)}/>}
+      {modal==='newStudent'&&<StudentModal onSave={addStudents} onClose={()=>setModal(null)}/>}
+      {modal==='newAssignment'&&<AssignmentModal onSave={createAssignment} onClose={()=>setModal(null)}/>}
+      {modal==='confirmDeleteClass'&&<Confirm msg={`ลบชั้นเรียน "${selectedClass?.name}" และข้อมูลทั้งหมด?`} onOk={deleteClass} onCancel={()=>setModal(null)}/>}
+      {modal==='confirmDeleteAssignment'&&<Confirm msg={`ลบงาน "${selectedAssignment?.title}"?`} onOk={deleteAssignment} onCancel={()=>setModal(null)}/>}
+
+      {/* Toast */}
+      {toast&&<Toast msg={toast} onDone={()=>setToast('')}/>}
     </div>
-    {[{title:"ทั่วไป",items:[{label:"Dark Mode",sub:"โหมดมืด",el:<Toggle on={dk} toggle={toggleDk}/>},{label:"Auto Save",sub:"บันทึกอัตโนมัติ",el:<Toggle on={autoSave} toggle={()=>setAutoSave(p=>!p)}/>}]},{title:"การแจ้งเตือน",items:[{label:"Push Notification",sub:"แจ้งเตือนบนมือถือ",el:<Toggle on={notif} toggle={()=>setNotif(p=>!p)}/>}]},{title:"แอปพลิเคชัน",items:[{label:"Version",sub:"AssignCheck Pro 1.0.0",el:<span className={`text-xs ${dk?"text-slate-500":"text-gray-400"}`}>v1.0.0</span>}]}].map(sec=>(
-      <div key={sec.title} className={`rounded-2xl border overflow-hidden ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
-        <div className={`px-4 py-3 border-b text-xs font-semibold uppercase tracking-wider ${dk?"border-slate-700/50 text-slate-400":"border-gray-50 text-gray-400"}`}>{sec.title}</div>
-        {sec.items.map((item,idx)=>(<div key={idx} className={`flex items-center justify-between px-4 py-3.5 ${idx<sec.items.length-1?dk?"border-b border-slate-700/30":"border-b border-gray-50":""}`}><div><div className={`text-sm font-medium ${dk?"text-white":"text-gray-900"}`}>{item.label}</div><div className={`text-xs ${dk?"text-slate-500":"text-gray-400"}`}>{item.sub}</div></div>{item.el}</div>))}
-      </div>
-    ))}
-  </div>);
+  );
 }
 
-// ── APP ─────────────────────────────────────────────────────────
-function App(){
-  const[dk,setDk]=useState(false);
-  const[page,setPage]=useState("dashboard");
-  const[rooms,setRooms]=useState(INIT_ROOMS);
-  const[students,setStudents]=useState(INIT_STUDENTS);
-  const[asgns,setAsgns]=useState(INIT_ASGNS);
-  const[fabTrigger,setFabTrigger]=useState(0);
-  const titles={dashboard:"Dashboard",classroom:"ห้องเรียน",assignment:"เช็คงาน",reports:"รายงาน",share:"แชร์ & ส่งออก",settings:"ตั้งค่า"};
-  const pages={
-    dashboard:<DashboardPage rooms={rooms} asgns={asgns} students={students} dk={dk} setPage={setPage}/>,
-    classroom:<ClassroomPage rooms={rooms} setRooms={setRooms} students={students} setStudents={setStudents} dk={dk}/>,
-    assignment:<AssignmentPage rooms={rooms} asgns={asgns} setAsgns={setAsgns} students={students} setStudents={setStudents} dk={dk} fabTrigger={fabTrigger}/>,
-    reports:<ReportsPage rooms={rooms} students={students} asgns={asgns} dk={dk}/>,
-    share:<SharePage rooms={rooms} students={students} dk={dk}/>,
-    settings:<SettingsPage dk={dk} toggleDk={()=>setDk(p=>!p)}/>,
-  };
-  return(<div className={`${dk?"dark bg-slate-950":"bg-gray-50"} h-screen overflow-hidden`} style={{fontFamily:"'Prompt',sans-serif"}}>
-    <ToastHost/>
-    <div className="flex h-full">
-      <Sidebar page={page} setPage={setPage} dk={dk}/>
-      <main className={`flex-1 flex flex-col min-w-0 overflow-hidden ${dk?"bg-slate-950":"bg-gray-50"}`}>
-        <Header title={titles[page]} dk={dk} toggleDk={()=>setDk(p=>!p)}/>
-        <div className="flex-1 overflow-y-auto overscroll-contain">{pages[page]}</div>
-      </main>
-    </div>
-    <BNav page={page} setPage={setPage} dk={dk}/>
-    <button onClick={()=>{setPage("assignment");setFabTrigger(p=>p+1);}} className="fixed right-4 bottom-20 lg:bottom-6 z-40 w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-500 shadow-xl shadow-cyan-500/40 flex items-center justify-center transition-all active:scale-90 hover:scale-110" title="เพิ่มงานใหม่"><Ic n="plus" s={24} c="text-white"/></button>
-  </div>);
-}
-
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+const rootEl=document.getElementById('root');
+const reactRoot=ReactDOM.createRoot(rootEl);
+reactRoot.render(<App/>);
 </script>
 </body>
 </html>
