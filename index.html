@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>AssignCheck Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: { extend: { fontFamily: { sans: ['Prompt','sans-serif'] } } }
+}
+</script>
+<style>
+* { -webkit-tap-highlight-color: transparent; font-family: 'Prompt', sans-serif; }
+body { margin: 0; overflow: hidden; }
+input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+select { -webkit-appearance: none; }
+@keyframes slide-in { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+.slide-in { animation: slide-in 0.25s ease; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+.dark ::-webkit-scrollbar-thumb { background: #334155; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+// ── DATA ────────────────────────────────────────────────────────
+const N1=["เด็กชายพิชัย มะลิวรรณ","เด็กชายกฤษณะ สุขใจ","เด็กหญิงวิภา ทองคำ","เด็กชายนพดล รุ่งเรือง","เด็กหญิงสุภาพร เพชรดี","เด็กชายอนุชา ศรีสวัสดิ์","เด็กหญิงปิยะนุช แก้วใส","เด็กชายธีรพงษ์ ดาวเรือง","เด็กหญิงนภัสสร สมบูรณ์","เด็กชายสุรพล ชัยมงคล","เด็กหญิงอรทัย พรหมมา","เด็กชายวรวุฒิ เจริญสุข","เด็กหญิงกัญญา ลือชา","เด็กชายพงศ์พัฒน์ วงศ์สวรรค์","เด็กหญิงณัฐชา ทิพย์สุวรรณ","เด็กชายภาณุวัฒน์ แสงทอง","เด็กหญิงศุภลักษณ์ มีโชค","เด็กชายจักรพล บุญส่ง","เด็กหญิงพรรณิภา วรรณศิลป์","เด็กชายนันทวัฒน์ คงดี","เด็กหญิงอาภาพร สุขสันต์","เด็กชายยศกร มั่นคง","เด็กหญิงธิดา รักษ์ดี","เด็กชายปัญญา ใจดี","เด็กหญิงรัตนา เสาวลักษณ์","เด็กชายสมชาย วงศ์ทอง","เด็กหญิงจิราพร นาคสุข","เด็กชายพีระพล แสนดี","เด็กหญิงมาลี สุขสมบูรณ์","เด็กชายเจษฎา พันธ์ดี","เด็กหญิงสายฝน มงคล","เด็กชายชนะชัย เพ็ชรงาม","เด็กหญิงบุษบา รัตนชัย","เด็กชายวิทวัส สุขเกษม","เด็กหญิงอรอนงค์ ดีงาม","เด็กชายคมสัน ศรีเมือง","เด็กหญิงปาริชาติ ชัยดี","เด็กชายสมศักดิ์ ทองใส"];
+const S1=["submitted","submitted","late","not_submitted","submitted","submitted","late","submitted","not_submitted","submitted","submitted","submitted","late","submitted","submitted","not_submitted","submitted","submitted","submitted","submitted","late","submitted","submitted","submitted","submitted","not_submitted","submitted","submitted","submitted","submitted","submitted","late","submitted","submitted","submitted","submitted","submitted","submitted"];
+const C1=[18,20,15,0,19,17,12,20,0,18,16,20,14,19,20,0,18,17,19,20,13,20,18,20,19,0,17,20,18,19,20,16,20,19,18,20,19,17];
+const N2=["เด็กชายกมล ศรีชมภู","เด็กหญิงฐิติมา ทองดี","เด็กชายวุฒิชัย สิงหา","เด็กหญิงสิริมา เพ็ชรดำ","เด็กชายอภิสิทธิ์ นาคา","เด็กหญิงชนิดา มีสุข","เด็กชายณัฐพล คำมา","เด็กหญิงวรัญญา ดวงดี","เด็กชายสุขสันต์ วิไล","เด็กหญิงภัทรา สุโข","เด็กชายกิตติ เจนใจ","เด็กหญิงนวลจันทร์ พรม","เด็กชายชัยวัฒน์ วงษ์","เด็กหญิงปริมปรา งาม","เด็กชายวรกิจ มะลิ","เด็กหญิงสุกานดา หน่าย","เด็กชายอัครพล ดา","เด็กหญิงธนัชชา บุญ","เด็กชายปราบ เด็ด","เด็กหญิงณภัทร สว่าง","เด็กชายภูมิ ดีงาม","เด็กหญิงมาลินี ยอดดี","เด็กชายอธิป ชัย","เด็กหญิงจุฑามาศ ทอง","เด็กชายนิธิ แดง","เด็กหญิงพัชรี ขาว","เด็กชายชวลิต เขียว","เด็กหญิงกนกวรรณ น้ำเงิน","เด็กชายสันติ ม่วง","เด็กหญิงนิภา เหลือง","เด็กชายยุทธนา ฟ้า","เด็กหญิงธัญลักษณ์ ส้ม","เด็กชายชาญชัย แดง","เด็กหญิงรุ่งนภา ดำ","เด็กชายเอกชัย ขาว"];
+const S2=["submitted","not_submitted","submitted","late","submitted","submitted","submitted","not_submitted","submitted","submitted","late","submitted","submitted","submitted","not_submitted","submitted","submitted","late","submitted","submitted","submitted","not_submitted","submitted","submitted","submitted","submitted","late","submitted","submitted","submitted","not_submitted","submitted","submitted","late","submitted"];
+const C2=[20,0,19,14,20,18,17,0,20,19,15,20,18,20,0,17,20,13,18,20,19,0,20,18,17,20,14,19,20,18,0,20,19,15,20];
+const N3=["เด็กชายกฤษ บุญมี","เด็กหญิงอัญชลี ทองแดง","เด็กชายธนากร ดีเลิศ","เด็กหญิงพิมพ์ชนก สว่างใจ","เด็กชายภคพล หมั่นดี","เด็กหญิงกาญจนา ศรีดี","เด็กชายชัยณรงค์ พิมพ์ดี","เด็กหญิงนริสรา งามดี","เด็กชายปัณณ์ ใจดี","เด็กหญิงลลิตา สุขสม","เด็กชายฉัตรชัย เจริญ","เด็กหญิงอิสรา รุ่งเรือง","เด็กชายพัสกร ทองดี","เด็กหญิงณัฐกานต์ สุขดี","เด็กชายกษิดิ์เดช มั่นคง","เด็กหญิงปุณณภา ศรีดี","เด็กชายพีรวิชญ์ ใจใส","เด็กหญิงชนิสรา สดใส","เด็กชายนัทธพงศ์ วิไล","เด็กหญิงอัมพิกา เพชรดี","เด็กชายจิรายุ สวรรค์","เด็กหญิงสุพรรณษา งามดี","เด็กชายพิสิษฐ์ ดีเลิศ","เด็กหญิงพัณณิน ชัยดี","เด็กชายอิทธิชัย สุขใจ","เด็กหญิงกัลยา ทองคำ","เด็กชายวชิรวิทย์ แก้วใส","เด็กหญิงภัทรศยา บุญดี","เด็กชายธีระ มีสุข","เด็กหญิงสรัลชนา ศรีสวัสดิ์","เด็กชายรพีพัฒน์ วงศ์ทอง","เด็กหญิงจิดาภา พรหมดี"];
+const S3=["submitted","submitted","not_submitted","submitted","late","submitted","submitted","submitted","not_submitted","submitted","submitted","late","submitted","submitted","submitted","submitted","not_submitted","submitted","submitted","late","submitted","submitted","submitted","not_submitted","submitted","submitted","submitted","late","submitted","submitted","submitted","not_submitted"];
+const C3=[20,19,0,20,16,18,20,19,0,20,18,15,20,20,19,18,0,20,17,14,20,19,18,0,20,20,19,16,20,18,20,0];
+
+const mk=(names,sts,scores)=>names.map((name,i)=>({id:i+1,no:i+1,name,status:sts[i]||"submitted",score:scores[i]||0,note:""}));
+
+const INIT_ROOMS=[
+  {id:1,name:"ม.1/1",subject:"คณิตศาสตร์พื้นฐาน",students:38,color:"#06b6d4"},
+  {id:2,name:"ม.1/2",subject:"คณิตศาสตร์เพิ่มเติม",students:35,color:"#8b5cf6"},
+  {id:3,name:"ม.1/3",subject:"กิจกรรม GSP",students:32,color:"#f59e0b"},
+];
+const INIT_STUDENTS={1:mk(N1,S1,C1),2:mk(N2,S2,C2),3:mk(N3,S3,C3)};
+const INIT_ASGNS=[
+  {id:1,classroomId:1,title:"แบบฝึกหัดทศนิยม บทที่ 4",maxScore:20,dueDate:"2025-06-10"},
+  {id:2,classroomId:1,title:"ใบงาน 4.1 เศษส่วน",maxScore:20,dueDate:"2025-06-05"},
+  {id:3,classroomId:2,title:"แบบฝึก อสมการ",maxScore:20,dueDate:"2025-06-08"},
+  {id:4,classroomId:3,title:"สร้างรูปทรงด้วย GSP",maxScore:20,dueDate:"2025-06-12"},
+];
+
+// ── UTILS ───────────────────────────────────────────────────────
+const sLabel=s=>({submitted:"ส่งแล้ว",late:"ส่งช้า",not_submitted:"ไม่ส่ง",pending:"รอตรวจ"}[s]||s);
+const sCls=(s,dk)=>({
+  submitted:dk?"bg-emerald-500/20 text-emerald-300 border-emerald-500/30":"bg-emerald-50 text-emerald-700 border-emerald-200",
+  late:dk?"bg-amber-500/20 text-amber-300 border-amber-500/30":"bg-amber-50 text-amber-700 border-amber-200",
+  not_submitted:dk?"bg-red-500/20 text-red-300 border-red-500/30":"bg-red-50 text-red-700 border-red-200",
+  pending:dk?"bg-blue-500/20 text-blue-300 border-blue-500/30":"bg-blue-50 text-blue-700 border-blue-200",
+}[s]||"");
+
+// ── TOAST ───────────────────────────────────────────────────────
+let _T=null;
+function ToastHost(){
+  const[list,setList]=useState([]);
+  useEffect(()=>{_T=(msg,type="success")=>{const id=Date.now();setList(p=>[...p,{id,msg,type}]);setTimeout(()=>setList(p=>p.filter(t=>t.id!==id)),3000);};},[]);
+  return(
+    <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none">
+      {list.map(t=>(
+        <div key={t.id} className={`slide-in px-4 py-3 rounded-xl shadow-2xl text-sm font-medium flex items-center gap-2 pointer-events-auto
+          ${t.type==="success"?"bg-emerald-500 text-white":t.type==="error"?"bg-red-500 text-white":"bg-blue-500 text-white"}`}>
+          {t.type==="success"?"✓":t.type==="error"?"✕":"🔔"} {t.msg}
+        </div>
+      ))}
+    </div>
+  );
+}
+const toast=(msg,type)=>_T&&_T(msg,type);
+
+// ── ICON (SVG paths) ────────────────────────────────────────────
+function Ic({n,s=20,c=""}){
+  const P={
+    dashboard:<><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></>,
+    home:<><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>,
+    file:<><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></>,
+    bar:<><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></>,
+    share:<><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></>,
+    gear:<><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></>,
+    plus:<><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>,
+    check:<polyline points="20 6 9 17 4 12"/>,
+    x:<><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>,
+    alert:<><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></>,
+    clock:<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>,
+    search:<><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></>,
+    dl:<><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></>,
+    users:<><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></>,
+    moon:<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>,
+    sun:<><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>,
+    arr:<><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></>,
+    mail:<><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></>,
+    copy:<><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></>,
+    zap:<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>,
+  };
+  return(<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={c}>{P[n]}</svg>);
+}
+
+// ── CARD ────────────────────────────────────────────────────────
+function Card({label,value,icon,color,dk,sub}){return(
+  <div className={`rounded-2xl p-4 flex flex-col gap-2 border ${dk?"bg-slate-800/60 border-slate-700/50 shadow-lg":"bg-white border-gray-100 shadow-sm"}`}>
+    <div className="flex items-center justify-between">
+      <span className={`text-xs font-medium ${dk?"text-slate-400":"text-gray-500"}`}>{label}</span>
+      <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{background:color+"22",color}}><Ic n={icon} s={16}/></div>
+    </div>
+    <div className={`text-2xl font-bold ${dk?"text-white":"text-gray-900"}`}>{value}</div>
+    {sub&&<div className={`text-xs ${dk?"text-slate-500":"text-gray-400"}`}>{sub}</div>}
+  </div>
+);}
+
+// ── BOTTOM NAV ──────────────────────────────────────────────────
+function BNav({page,setPage,dk}){
+  const items=[{id:"dashboard",icon:"dashboard",label:"ภาพรวม"},{id:"classroom",icon:"home",label:"ห้องเรียน"},{id:"assignment",icon:"file",label:"เช็คงาน"},{id:"reports",icon:"bar",label:"รายงาน"},{id:"share",icon:"share",label:"แชร์"}];
+  return(
+    <nav className={`fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t backdrop-blur-xl ${dk?"bg-slate-900/95 border-slate-700/50":"bg-white/95 border-gray-200"}`}>
+      <div className="flex">
+        {items.map(i=>(
+          <button key={i.id} onClick={()=>setPage(i.id)} className={`flex-1 flex flex-col items-center gap-1 py-2 text-[10px] font-medium transition-all ${page===i.id?"text-cyan-500":dk?"text-slate-500":"text-gray-400"}`}>
+            <div className={`w-10 h-6 rounded-full flex items-center justify-center ${page===i.id?"bg-cyan-500/15":""}`}><Ic n={i.icon} s={18}/></div>
+            {i.label}
+          </button>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+// ── SIDEBAR ─────────────────────────────────────────────────────
+function Sidebar({page,setPage,dk}){
+  const items=[{id:"dashboard",icon:"dashboard",label:"Dashboard"},{id:"classroom",icon:"home",label:"ห้องเรียน"},{id:"assignment",icon:"file",label:"เช็คงาน"},{id:"reports",icon:"bar",label:"รายงาน"},{id:"share",icon:"share",label:"แชร์ & ส่งออก"},{id:"settings",icon:"gear",label:"ตั้งค่า"}];
+  return(
+    <aside className={`hidden lg:flex flex-col w-60 h-screen sticky top-0 border-r p-4 gap-1 flex-shrink-0 ${dk?"bg-slate-900 border-slate-800":"bg-white border-gray-100"}`}>
+      <div className="flex items-center gap-3 px-3 py-4 mb-4">
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center shadow-lg shadow-cyan-500/30"><Ic n="zap" s={18} c="text-white"/></div>
+        <div><div className={`font-bold text-sm ${dk?"text-white":"text-gray-900"}`}>AssignCheck</div><div className={`text-xs ${dk?"text-slate-500":"text-gray-400"}`}>Pro</div></div>
+      </div>
+      {items.map(i=>(
+        <button key={i.id} onClick={()=>setPage(i.id)} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-left ${page===i.id?"bg-cyan-500/10 text-cyan-600":dk?"text-slate-400 hover:text-slate-200 hover:bg-slate-800":"text-gray-500 hover:text-gray-900 hover:bg-gray-50"}`}>
+          <Ic n={i.icon} s={18}/>{i.label}
+        </button>
+      ))}
+      <div className="flex-1"/>
+      <div className={`px-3 py-3 rounded-xl text-xs ${dk?"bg-slate-800 text-slate-400":"bg-gray-50 text-gray-500"}`}><div className="font-semibold mb-1">นายธนกฤต</div><div>โรงเรียนหล่มสักวิทยาคม</div></div>
+    </aside>
+  );
+}
+
+// ── HEADER ──────────────────────────────────────────────────────
+function Header({title,dk,toggleDk}){return(
+  <header className={`sticky top-0 z-40 flex items-center justify-between px-4 py-3 border-b backdrop-blur-xl flex-shrink-0 ${dk?"bg-slate-900/90 border-slate-800":"bg-white/90 border-gray-100"}`}>
+    <div className="flex items-center gap-3">
+      <div className="lg:hidden w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center"><Ic n="zap" s={16} c="text-white"/></div>
+      <h1 className={`font-bold text-base lg:text-lg ${dk?"text-white":"text-gray-900"}`}>{title}</h1>
+    </div>
+    <button onClick={toggleDk} className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${dk?"bg-slate-800 text-slate-400":"bg-gray-100 text-gray-500"}`}><Ic n={dk?"sun":"moon"} s={17}/></button>
+  </header>
+);}
+
+// ── DASHBOARD ───────────────────────────────────────────────────
+function DashboardPage({rooms,asgns,students,dk,setPage}){
+  const allS=Object.values(students).flat();
+  const sub=allS.filter(s=>s.status==="submitted").length;
+  const late=allS.filter(s=>s.status==="late").length;
+  const notS=allS.filter(s=>s.status==="not_submitted").length;
+  const rate=allS.length?Math.round(((sub+late)/allS.length)*100):0;
+  const avg=allS.filter(s=>s.score>0).reduce((a,s,_,arr)=>a+s.score/arr.length,0).toFixed(1);
+  return(
+    <div className="p-4 space-y-5 pb-24 lg:pb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+        <Card label="ห้องเรียน" value={rooms.length} icon="home" color="#06b6d4" dk={dk}/>
+        <Card label="นักเรียนทั้งหมด" value={rooms.reduce((a,r)=>a+r.students,0)} icon="users" color="#8b5cf6" dk={dk}/>
+        <Card label="ส่งงานแล้ว" value={sub} icon="check" color="#10b981" dk={dk} sub={`จาก ${allS.length} คน`}/>
+        <Card label="ส่งช้า" value={late} icon="clock" color="#f59e0b" dk={dk}/>
+        <Card label="ไม่ส่ง" value={notS} icon="x" color="#ef4444" dk={dk}/>
+        <Card label="คะแนนเฉลี่ย" value={avg} icon="bar" color="#f59e0b" dk={dk} sub={`ส่งงาน ${rate}%`}/>
+      </div>
+      <div className={`rounded-2xl p-4 border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
+        <div className="flex justify-between mb-2"><span className={`text-sm font-semibold ${dk?"text-white":"text-gray-800"}`}>อัตราการส่งงานรวม</span><span className="text-sm font-bold text-cyan-500">{rate}%</span></div>
+        <div className={`h-3 rounded-full ${dk?"bg-slate-700":"bg-gray-100"} overflow-hidden`}><div className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-teal-400" style={{width:`${rate}%`}}/></div>
+        <div className="flex gap-4 mt-3">
+          {[{l:"ส่งแล้ว",v:sub,c:"#10b981"},{l:"ส่งช้า",v:late,c:"#f59e0b"},{l:"ไม่ส่ง",v:notS,c:"#ef4444"}].map(i=>(
+            <div key={i.l} className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full" style={{background:i.c}}/><span className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>{i.l} {i.v}</span></div>
+          ))}
+        </div>
+      </div>
+      <div className={`rounded-2xl p-4 border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
+        <div className={`text-sm font-semibold mb-3 ${dk?"text-white":"text-gray-800"}`}>🚨 แจ้งเตือนสำคัญ</div>
+        {[{icon:"alert",color:"#ef4444",label:"งานเกินกำหนด",detail:"ใบงาน 4.1 เศษส่วน (ม.1/1)",bg:dk?"bg-red-500/10 border-red-500/20":"bg-red-50 border-red-100"},
+          {icon:"clock",color:"#f59e0b",label:"ใกล้หมดเวลา",detail:"แบบฝึก อสมการ — อีก 2 วัน",bg:dk?"bg-amber-500/10 border-amber-500/20":"bg-amber-50 border-amber-100"},
+          {icon:"users",color:"#06b6d4",label:"ส่งงานต่ำกว่า 60%",detail:"ม.1/3 : กิจกรรม GSP",bg:dk?"bg-cyan-500/10 border-cyan-500/20":"bg-cyan-50 border-cyan-100"},
+        ].map((a,idx)=>(
+          <div key={idx} className={`flex items-start gap-3 p-3 rounded-xl border mb-2 ${a.bg}`}>
+            <div style={{color:a.color}}><Ic n={a.icon} s={16}/></div>
+            <div><div className={`text-xs font-semibold ${dk?"text-white":"text-gray-800"}`}>{a.label}</div><div className={`text-xs mt-0.5 ${dk?"text-slate-400":"text-gray-500"}`}>{a.detail}</div></div>
+          </div>
+        ))}
+      </div>
+      <div>
+        <div className={`text-sm font-semibold mb-3 ${dk?"text-white":"text-gray-800"}`}>ห้องเรียนของฉัน</div>
+        <div className="space-y-3">
+          {rooms.map(r=>{
+            const st=students[r.id]||[];
+            const rt=st.length?Math.round((st.filter(s=>s.status!=="not_submitted").length/st.length)*100):0;
+            return(<div key={r.id} className={`rounded-2xl p-4 border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-xs" style={{background:r.color}}>{r.name}</div>
+                  <div><div className={`font-semibold text-sm ${dk?"text-white":"text-gray-900"}`}>{r.subject}</div><div className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>{r.students} คน</div></div>
+                </div>
+                <span className={`text-lg font-bold ${rt>=80?"text-emerald-500":rt>=60?"text-amber-500":"text-red-500"}`}>{rt}%</span>
+              </div>
+              <div className={`h-2 rounded-full ${dk?"bg-slate-700":"bg-gray-100"} overflow-hidden`}><div className="h-full rounded-full" style={{width:`${rt}%`,background:r.color}}/></div>
+            </div>);
+          })}
+        </div>
+      </div>
+      <div>
+        <div className={`text-sm font-semibold mb-3 ${dk?"text-white":"text-gray-800"}`}>Quick Actions</div>
+        <div className="grid grid-cols-2 gap-3">
+          {[{label:"เช็คงาน",icon:"check",color:"#10b981",pg:"assignment"},{label:"ดูรายงาน",icon:"bar",color:"#8b5cf6",pg:"reports"},{label:"แชร์ผล",icon:"share",color:"#f59e0b",pg:"share"},{label:"ตั้งค่า",icon:"gear",color:"#06b6d4",pg:"settings"}].map(a=>(
+            <button key={a.label} onClick={()=>setPage(a.pg)} className={`flex items-center gap-3 p-4 rounded-2xl border text-left active:scale-95 ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background:a.color+"22",color:a.color}}><Ic n={a.icon} s={18}/></div>
+              <span className={`text-sm font-medium ${dk?"text-slate-300":"text-gray-700"}`}>{a.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── CLASSROOM ───────────────────────────────────────────────────
+function ClassroomPage({rooms,setRooms,students,dk}){
+  const[showAdd,setShowAdd]=useState(false);
+  const[form,setForm]=useState({name:"",subject:""});
+  const[sel,setSel]=useState(null);
+  const[q,setQ]=useState("");
+  const addRoom=()=>{
+    if(!form.name||!form.subject)return;
+    const cols=["#06b6d4","#8b5cf6","#f59e0b","#10b981","#ef4444"];
+    setRooms(p=>[...p,{id:Date.now(),name:form.name,subject:form.subject,students:0,color:cols[p.length%5]}]);
+    setForm({name:"",subject:""});setShowAdd(false);toast("เพิ่มห้องเรียนสำเร็จ","success");
+  };
+  if(sel){
+    const st=(students[sel.id]||[]).filter(s=>q===""||s.name.includes(q)||String(s.no).includes(q));
+    return(<div className="p-4 space-y-4 pb-24 lg:pb-6">
+      <div className="flex items-center gap-3">
+        <button onClick={()=>{setSel(null);setQ("");}} className={`w-9 h-9 rounded-xl flex items-center justify-center ${dk?"bg-slate-800 text-slate-400":"bg-gray-100 text-gray-600"}`}><Ic n="arr" s={18} c="rotate-180"/></button>
+        <div><div className={`font-bold ${dk?"text-white":"text-gray-900"}`}>{sel.name}</div><div className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>{sel.subject} · {sel.students} คน</div></div>
+      </div>
+      <div className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border ${dk?"bg-slate-800 border-slate-700":"bg-gray-50 border-gray-200"}`}>
+        <Ic n="search" s={16} c={dk?"text-slate-500":"text-gray-400"}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="ค้นหานักเรียน..." className={`flex-1 bg-transparent text-sm outline-none ${dk?"text-white placeholder-slate-500":"text-gray-900 placeholder-gray-400"}`}/>
+      </div>
+      <div className="space-y-2">
+        {st.map(s=>(<div key={s.id} className={`flex items-center gap-3 p-3 rounded-xl border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center text-white text-xs font-bold">{s.no}</div>
+          <div className="flex-1 min-w-0"><div className={`text-sm font-medium truncate ${dk?"text-white":"text-gray-900"}`}>{s.name}</div><div className={`text-xs ${dk?"text-slate-500":"text-gray-400"}`}>เลขที่ {s.no}</div></div>
+          <span className={`text-xs px-2 py-1 rounded-lg border font-medium ${sCls(s.status,dk)}`}>{sLabel(s.status)}</span>
+        </div>))}
+      </div>
+    </div>);
+  }
+  return(<div className="p-4 space-y-4 pb-24 lg:pb-6">
+    <div className="flex items-center justify-between">
+      <p className={`text-sm ${dk?"text-slate-400":"text-gray-500"}`}>{rooms.length} ห้องเรียน</p>
+      <button onClick={()=>setShowAdd(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500 text-white text-sm font-medium shadow-lg shadow-cyan-500/30 active:scale-95"><Ic n="plus" s={16}/> เพิ่มห้อง</button>
+    </div>
+    {showAdd&&(<div className={`rounded-2xl p-4 border space-y-3 ${dk?"bg-slate-800 border-slate-700":"bg-cyan-50 border-cyan-200"}`}>
+      <div className={`text-sm font-semibold ${dk?"text-white":"text-gray-800"}`}>เพิ่มห้องเรียนใหม่</div>
+      <input value={form.name} onChange={e=>setForm(p=>({...p,name:e.target.value}))} placeholder="ชื่อห้อง เช่น ม.1/4" className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none ${dk?"bg-slate-700 border-slate-600 text-white placeholder-slate-500":"bg-white border-gray-200"}`}/>
+      <input value={form.subject} onChange={e=>setForm(p=>({...p,subject:e.target.value}))} placeholder="วิชา เช่น คณิตศาสตร์" className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none ${dk?"bg-slate-700 border-slate-600 text-white placeholder-slate-500":"bg-white border-gray-200"}`}/>
+      <div className="flex gap-2"><button onClick={addRoom} className="flex-1 py-2 rounded-xl bg-cyan-500 text-white text-sm">บันทึก</button><button onClick={()=>setShowAdd(false)} className={`flex-1 py-2 rounded-xl text-sm ${dk?"bg-slate-700 text-slate-300":"bg-gray-100 text-gray-600"}`}>ยกเลิก</button></div>
+    </div>)}
+    <div className="space-y-3">
+      {rooms.map(r=>{
+        const st=students[r.id]||[];const rt=st.length?Math.round((st.filter(s=>s.status!=="not_submitted").length/st.length)*100):0;
+        return(<div key={r.id} onClick={()=>setSel(r)} className={`rounded-2xl p-4 border cursor-pointer active:scale-[0.99] ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-xs" style={{background:r.color}}>{r.name}</div>
+            <div className="flex-1"><div className={`font-semibold ${dk?"text-white":"text-gray-900"}`}>{r.subject}</div><div className={`text-xs mt-0.5 ${dk?"text-slate-400":"text-gray-500"}`}>{r.students} คน</div></div>
+            <div className="text-right"><div className={`text-lg font-bold ${rt>=80?"text-emerald-500":rt>=60?"text-amber-500":"text-red-500"}`}>{rt}%</div><div className={`text-xs ${dk?"text-slate-500":"text-gray-400"}`}>ส่งงาน</div></div>
+          </div>
+          <div className={`h-2 rounded-full ${dk?"bg-slate-700":"bg-gray-100"} overflow-hidden`}><div className="h-full rounded-full" style={{width:`${rt}%`,background:r.color}}/></div>
+          <div className="flex gap-3 mt-3">
+            {[{l:"ส่งแล้ว",v:st.filter(s=>s.status==="submitted").length,c:"#10b981"},{l:"ส่งช้า",v:st.filter(s=>s.status==="late").length,c:"#f59e0b"},{l:"ไม่ส่ง",v:st.filter(s=>s.status==="not_submitted").length,c:"#ef4444"}].map(i=>(
+              <div key={i.l} className="flex items-center gap-1"><div className="w-2 h-2 rounded-full" style={{background:i.c}}/><span className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>{i.l} {i.v}</span></div>
+            ))}
+          </div>
+        </div>);
+      })}
+    </div>
+  </div>);
+}
+
+// ── ASSIGNMENT ──────────────────────────────────────────────────
+function AssignmentPage({rooms,asgns,setAsgns,students,setStudents,dk,fabTrigger}){
+  const[step,setStep]=useState(1);
+  const[room,setRoom]=useState(null);
+  const[asgn,setAsgn]=useState(null);
+  const[filter,setFilter]=useState("all");
+  const[q,setQ]=useState("");
+  const[showAdd,setShowAdd]=useState(false);
+  const[form,setForm]=useState({title:"",maxScore:"20",dueDate:""});
+
+  useEffect(()=>{if(fabTrigger>0){if(room){setStep(2);setShowAdd(true);}else toast("เลือกห้องเรียนก่อน แล้วกด + เพิ่มงาน","info");}},[fabTrigger]);
+
+  const roomAsgns=asgns.filter(a=>a.classroomId===room?.id);
+  const studs=(students[room?.id]||[]).filter(s=>{
+    if(filter==="not_submitted")return s.status==="not_submitted";
+    if(filter==="late")return s.status==="late";
+    if(filter==="submitted")return s.status==="submitted";
+    return true;
+  }).filter(s=>q===""||s.name.includes(q)||String(s.no).includes(q));
+
+  const upd=(sid,field,val)=>setStudents(prev=>({...prev,[room.id]:prev[room.id].map(s=>s.id===sid?{...s,[field]:val}:s)}));
+  const bulkSet=st=>{setStudents(prev=>({...prev,[room.id]:prev[room.id].map(s=>({...s,status:st}))}));toast(`อัพเดทสถานะทั้งหมดเป็น "${sLabel(st)}"`, "success");};
+  const autoScore=()=>{const max=parseInt(asgn?.maxScore||20);setStudents(prev=>({...prev,[room.id]:prev[room.id].map(s=>s.status!=="not_submitted"?{...s,score:max}:s)}));toast("ให้คะแนนเต็มทุกคนที่ส่งแล้ว","success");};
+  const addAsgn=()=>{if(!form.title)return;setAsgns(p=>[...p,{id:Date.now(),classroomId:room.id,...form,maxScore:parseInt(form.maxScore),createdAt:new Date().toISOString().split("T")[0]}]);setForm({title:"",maxScore:"20",dueDate:""});setShowAdd(false);toast("เพิ่มงานสำเร็จ","success");};
+
+  if(step===1)return(<div className="p-4 space-y-4 pb-24 lg:pb-6">
+    <p className={`text-sm ${dk?"text-slate-400":"text-gray-500"}`}>เลือกห้องเรียน</p>
+    {rooms.map(r=>(<button key={r.id} onClick={()=>{setRoom(r);setStep(2);}} className={`w-full text-left rounded-2xl p-4 border active:scale-[0.99] ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
+      <div className="flex items-center gap-3">
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-xs" style={{background:r.color}}>{r.name}</div>
+        <div><div className={`font-semibold ${dk?"text-white":"text-gray-900"}`}>{r.subject}</div><div className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>{r.students} คน</div></div>
+        <Ic n="arr" s={18} c={`ml-auto ${dk?"text-slate-600":"text-gray-300"}`}/>
+      </div>
+    </button>))}
+  </div>);
+
+  if(step===2)return(<div className="p-4 space-y-4 pb-24 lg:pb-6">
+    <div className="flex items-center gap-3">
+      <button onClick={()=>setStep(1)} className={`w-9 h-9 rounded-xl flex items-center justify-center ${dk?"bg-slate-800 text-slate-400":"bg-gray-100 text-gray-600"}`}><Ic n="arr" s={18} c="rotate-180"/></button>
+      <div className="flex-1"><div className={`font-bold ${dk?"text-white":"text-gray-900"}`}>{room.name}</div><div className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>เลือกงานที่ต้องการเช็ค</div></div>
+      <button onClick={()=>setShowAdd(true)} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-500 text-white text-xs font-medium"><Ic n="plus" s={14}/> เพิ่มงาน</button>
+    </div>
+    {showAdd&&(<div className={`rounded-2xl p-4 border space-y-3 ${dk?"bg-slate-800 border-slate-700":"bg-cyan-50 border-cyan-200"}`}>
+      <div className={`text-sm font-semibold ${dk?"text-white":"text-gray-800"}`}>เพิ่มงานใหม่</div>
+      <input value={form.title} onChange={e=>setForm(p=>({...p,title:e.target.value}))} placeholder="ชื่องาน" className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none ${dk?"bg-slate-700 border-slate-600 text-white placeholder-slate-500":"bg-white border-gray-200"}`}/>
+      <div className="flex gap-2">
+        <input type="number" value={form.maxScore} onChange={e=>setForm(p=>({...p,maxScore:e.target.value}))} placeholder="คะแนนเต็ม" className={`flex-1 px-3 py-2.5 rounded-xl border text-sm outline-none ${dk?"bg-slate-700 border-slate-600 text-white":"bg-white border-gray-200"}`}/>
+        <input type="date" value={form.dueDate} onChange={e=>setForm(p=>({...p,dueDate:e.target.value}))} className={`flex-1 px-3 py-2.5 rounded-xl border text-sm outline-none ${dk?"bg-slate-700 border-slate-600 text-white":"bg-white border-gray-200"}`}/>
+      </div>
+      <div className="flex gap-2"><button onClick={addAsgn} className="flex-1 py-2 rounded-xl bg-cyan-500 text-white text-sm">บันทึก</button><button onClick={()=>setShowAdd(false)} className={`flex-1 py-2 rounded-xl text-sm ${dk?"bg-slate-700 text-slate-300":"bg-gray-100 text-gray-600"}`}>ยกเลิก</button></div>
+    </div>)}
+    {roomAsgns.length===0&&(<div className={`text-center py-12 ${dk?"text-slate-500":"text-gray-400"}`}><div className="text-4xl mb-3 opacity-30">📋</div><p className="text-sm">ยังไม่มีงาน กด "เพิ่มงาน" เพื่อเริ่มต้น</p></div>)}
+    {roomAsgns.map(a=>(<button key={a.id} onClick={()=>{setAsgn(a);setStep(3);}} className={`w-full text-left rounded-2xl p-4 border active:scale-[0.99] ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
+      <div className="flex items-start gap-3">
+        <div className="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center flex-shrink-0"><Ic n="file" s={18}/></div>
+        <div className="flex-1 min-w-0"><div className={`font-semibold text-sm ${dk?"text-white":"text-gray-900"}`}>{a.title}</div><div className={`text-xs mt-1 ${dk?"text-slate-400":"text-gray-500"}`}>เต็ม {a.maxScore} · กำหนด {a.dueDate||"ไม่กำหนด"}</div></div>
+        <Ic n="arr" s={18} c={dk?"text-slate-600":"text-gray-300"}/>
+      </div>
+    </button>))}
+  </div>);
+
+  const allSt=students[room.id]||[];
+  const summ={submitted:allSt.filter(s=>s.status==="submitted").length,late:allSt.filter(s=>s.status==="late").length,not_submitted:allSt.filter(s=>s.status==="not_submitted").length};
+  return(<div className="pb-24 lg:pb-6">
+    <div className={`sticky top-[57px] z-30 p-4 border-b ${dk?"bg-slate-900 border-slate-800":"bg-gray-50 border-gray-100"}`}>
+      <div className="flex items-center gap-3 mb-3">
+        <button onClick={()=>setStep(2)} className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${dk?"bg-slate-800 text-slate-400":"bg-white text-gray-600"} border ${dk?"border-slate-700":"border-gray-200"}`}><Ic n="arr" s={18} c="rotate-180"/></button>
+        <div className="flex-1 min-w-0"><div className={`font-bold text-sm truncate ${dk?"text-white":"text-gray-900"}`}>{asgn.title}</div><div className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>{room.name} · เต็ม {asgn.maxScore}</div></div>
+      </div>
+      <div className="flex gap-1.5 mb-3">
+        {[{k:"all",label:"ทั้งหมด",val:allSt.length,col:"cyan"},{k:"submitted",label:"ส่งแล้ว",val:summ.submitted,col:"emerald"},{k:"late",label:"ส่งช้า",val:summ.late,col:"amber"},{k:"not_submitted",label:"ไม่ส่ง",val:summ.not_submitted,col:"red"}].map(f=>(
+          <button key={f.k} onClick={()=>setFilter(f.k)} className={`flex-1 py-1.5 rounded-xl text-[10px] font-medium transition-all border ${filter===f.k?f.col==="emerald"?"bg-emerald-500 text-white border-emerald-500":f.col==="amber"?"bg-amber-500 text-white border-amber-500":f.col==="red"?"bg-red-500 text-white border-red-500":"bg-cyan-500 text-white border-cyan-500":dk?"bg-slate-800 text-slate-400 border-slate-700":"bg-white text-gray-500 border-gray-200"}`}>{f.label} {f.val}</button>
+        ))}
+      </div>
+      <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border mb-3 ${dk?"bg-slate-800 border-slate-700":"bg-white border-gray-200"}`}>
+        <Ic n="search" s={15} c={dk?"text-slate-500":"text-gray-400"}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="ค้นหา..." className={`flex-1 bg-transparent text-sm outline-none ${dk?"text-white placeholder-slate-500":"text-gray-900 placeholder-gray-400"}`}/>
+      </div>
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {[{label:"ส่งทุกคน",fn:()=>bulkSet("submitted"),col:"emerald"},{label:"ไม่ส่งทั้งหมด",fn:()=>bulkSet("not_submitted"),col:"red"},{label:"คะแนนเต็ม",fn:autoScore,col:"cyan"}].map(b=>(
+          <button key={b.label} onClick={b.fn} className={`flex-shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium active:scale-95 border ${b.col==="emerald"?"bg-emerald-500/10 text-emerald-500 border-emerald-500/30":b.col==="red"?"bg-red-500/10 text-red-500 border-red-500/30":"bg-cyan-500/10 text-cyan-500 border-cyan-500/30"}`}>{b.label}</button>
+        ))}
+      </div>
+    </div>
+    <div className="p-4 space-y-2">
+      {studs.map(s=>(<div key={s.id} className={`rounded-2xl p-3 border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">{s.no}</div>
+          <div className="flex-1 min-w-0"><div className={`text-sm font-medium truncate ${dk?"text-white":"text-gray-900"}`}>{s.name}</div></div>
+          <select value={s.status} onChange={e=>upd(s.id,"status",e.target.value)} className={`text-xs px-2 py-1.5 rounded-xl border outline-none cursor-pointer ${sCls(s.status,dk)}`} style={{background:"transparent"}}>
+            <option value="submitted">ส่งแล้ว</option><option value="late">ส่งช้า</option><option value="not_submitted">ไม่ส่ง</option><option value="pending">รอตรวจ</option>
+          </select>
+          <input type="number" value={s.score} min={0} max={asgn.maxScore} onChange={e=>upd(s.id,"score",Math.max(0,Math.min(parseInt(e.target.value)||0,asgn.maxScore)))} className={`w-14 text-center text-sm font-bold px-2 py-1.5 rounded-xl border outline-none ${dk?"bg-slate-700 border-slate-600 text-white":"bg-gray-50 border-gray-200 text-gray-900"}`}/>
+        </div>
+        <div className="mt-2 ml-12"><input value={s.note} onChange={e=>upd(s.id,"note",e.target.value)} placeholder="หมายเหตุ..." className={`w-full text-xs px-2 py-1.5 rounded-lg border outline-none ${dk?"bg-slate-700/50 border-slate-700 text-slate-300 placeholder-slate-600":"bg-gray-50 border-gray-100 text-gray-600"}`}/></div>
+      </div>))}
+    </div>
+  </div>);
+}
+
+// ── REPORTS ─────────────────────────────────────────────────────
+function ReportsPage({rooms,students,asgns,dk}){
+  const[activeRoom,setActiveRoom]=useState(rooms[0]?.id);
+  const[viewMode,setViewMode]=useState("overview");
+  const[selStu,setSelStu]=useState(null);
+  const[q,setQ]=useState("");
+  const roomSt=students[activeRoom]||[];
+  const roomAsgns=asgns.filter(a=>a.classroomId===activeRoom);
+  const sub=roomSt.filter(s=>s.status==="submitted").length;
+  const late=roomSt.filter(s=>s.status==="late").length;
+  const notS=roomSt.filter(s=>s.status==="not_submitted").length;
+  const total=roomSt.length;
+  const stuMatrix=roomSt.map(s=>{
+    const records=roomAsgns.map((a,idx)=>{
+      const hash=(s.id*13+a.id*7+idx)%10;
+      const status=s.status==="not_submitted"&&idx===0?"not_submitted":hash<6?"submitted":hash<8?"late":"not_submitted";
+      return{assignmentId:a.id,title:a.title,status};
+    });
+    return{...s,records,submitCount:records.filter(r=>r.status==="submitted").length,lateCount:records.filter(r=>r.status==="late").length,notCount:records.filter(r=>r.status==="not_submitted").length};
+  });
+  const filteredStu=stuMatrix.filter(s=>q===""||s.name.includes(q)||String(s.no).includes(q));
+
+  if(selStu){
+    const stu=stuMatrix.find(s=>s.id===selStu);if(!stu)return null;
+    const rt=roomAsgns.length>0?Math.round(((stu.submitCount+stu.lateCount)/roomAsgns.length)*100):0;
+    return(<div className="p-4 space-y-4 pb-24 lg:pb-6">
+      <div className="flex items-center gap-3">
+        <button onClick={()=>setSelStu(null)} className={`w-9 h-9 rounded-xl flex items-center justify-center ${dk?"bg-slate-800 text-slate-400":"bg-gray-100 text-gray-600"}`}><Ic n="arr" s={18} c="rotate-180"/></button>
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center text-white font-bold">{stu.no}</div>
+          <div><div className={`font-bold text-sm ${dk?"text-white":"text-gray-900"}`}>{stu.name}</div><div className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>เลขที่ {stu.no} · {rooms.find(r=>r.id===activeRoom)?.name}</div></div>
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        {[{label:"ส่งแล้ว",val:stu.submitCount,c:"text-emerald-500",bg:dk?"bg-emerald-500/10":"bg-emerald-50"},{label:"ส่งช้า",val:stu.lateCount,c:"text-amber-500",bg:dk?"bg-amber-500/10":"bg-amber-50"},{label:"ไม่ส่ง",val:stu.notCount,c:"text-red-500",bg:dk?"bg-red-500/10":"bg-red-50"}].map(item=>(
+          <div key={item.label} className={`rounded-2xl p-3 text-center border ${dk?"border-slate-700/50":"border-gray-100"} ${item.bg}`}><div className={`text-xl font-bold ${item.c}`}>{item.val}</div><div className={`text-xs mt-0.5 ${dk?"text-slate-400":"text-gray-500"}`}>{item.label}</div></div>
+        ))}
+      </div>
+      <div className={`rounded-2xl p-4 border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
+        <div className="flex justify-between items-center mb-2"><span className={`text-xs font-medium ${dk?"text-slate-400":"text-gray-500"}`}>อัตราการส่งงาน</span><span className="text-xs font-bold text-cyan-500">{rt}%</span></div>
+        <div className={`h-3 rounded-full ${dk?"bg-slate-700":"bg-gray-100"} overflow-hidden`}><div className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-teal-400" style={{width:`${rt}%`}}/></div>
+      </div>
+      <div className={`rounded-2xl border overflow-hidden ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
+        <div className={`px-4 py-3 border-b text-xs font-semibold uppercase tracking-wide ${dk?"border-slate-700/50 text-slate-400":"border-gray-50 text-gray-400"}`}>งานทั้งหมด {roomAsgns.length} ชิ้น</div>
+        {stu.records.length===0&&<div className={`p-8 text-center text-sm ${dk?"text-slate-500":"text-gray-400"}`}>ยังไม่มีงานในห้องนี้</div>}
+        {stu.records.map((r,idx)=>(<div key={r.assignmentId} className={`flex items-center gap-3 px-4 py-3.5 ${idx<stu.records.length-1?dk?"border-b border-slate-700/30":"border-b border-gray-50":""}`}>
+          <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${r.status==="submitted"?"bg-emerald-500/15 text-emerald-500":r.status==="late"?"bg-amber-500/15 text-amber-500":"bg-red-500/15 text-red-400"}`}><Ic n={r.status==="not_submitted"?"x":"check"} s={15}/></div>
+          <div className={`flex-1 min-w-0 text-sm truncate ${dk?"text-slate-200":"text-gray-800"}`}>{r.title}</div>
+          <span className={`text-xs px-2.5 py-1 rounded-lg border font-medium flex-shrink-0 ${sCls(r.status,dk)}`}>{sLabel(r.status)}</span>
+        </div>))}
+      </div>
+    </div>);
+  }
+
+  return(<div className="p-4 space-y-4 pb-24 lg:pb-6">
+    <div className="flex gap-2 overflow-x-auto pb-1">
+      {rooms.map(r=>(<button key={r.id} onClick={()=>{setActiveRoom(r.id);setViewMode("overview");setSelStu(null);}} className="flex-shrink-0 px-4 py-2 rounded-xl text-xs font-medium transition-all border" style={activeRoom===r.id?{background:r.color,color:"white",borderColor:r.color,boxShadow:`0 4px 12px ${r.color}44`}:{borderColor:dk?"#334155":"#e5e7eb",color:dk?"#94a3b8":"#6b7280",background:"transparent"}}>{r.name}</button>))}
+    </div>
+    <div className={`flex rounded-xl p-1 ${dk?"bg-slate-800":"bg-gray-100"}`}>
+      {[{id:"overview",label:"ภาพรวมห้อง"},{id:"student",label:"รายคน"}].map(m=>(<button key={m.id} onClick={()=>setViewMode(m.id)} className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${viewMode===m.id?"bg-cyan-500 text-white shadow-sm":dk?"text-slate-400":"text-gray-500"}`}>{m.label}</button>))}
+    </div>
+
+    {viewMode==="overview"&&(<>
+      <div className="grid grid-cols-3 gap-3"><Card label="ส่งแล้ว" value={sub} icon="check" color="#10b981" dk={dk}/><Card label="ส่งช้า" value={late} icon="clock" color="#f59e0b" dk={dk}/><Card label="ไม่ส่ง" value={notS} icon="x" color="#ef4444" dk={dk}/></div>
+      <div className={`rounded-2xl p-4 border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
+        <div className={`text-sm font-semibold mb-4 ${dk?"text-white":"text-gray-800"}`}>สัดส่วนการส่งงาน</div>
+        <div className="flex items-center gap-6">
+          <svg viewBox="0 0 120 120" className="w-28 h-28 flex-shrink-0">
+            {(()=>{const data=[{val:sub,color:"#10b981"},{val:late,color:"#f59e0b"},{val:notS,color:"#ef4444"}];let cum=0;const tot=sub+late+notS||1;return data.map((d,i)=>{const pct=d.val/tot,sa=cum*2*Math.PI-Math.PI/2,ea=(cum+pct)*2*Math.PI-Math.PI/2,x1=60+50*Math.cos(sa),y1=60+50*Math.sin(sa),x2=60+50*Math.cos(ea),y2=60+50*Math.sin(ea);cum+=pct;if(d.val===0)return null;return<path key={i} d={`M 60 60 L ${x1} ${y1} A 50 50 0 ${pct>0.5?1:0} 1 ${x2} ${y2} Z`} fill={d.color}/>;});})()}
+            <circle cx="60" cy="60" r="32" fill={dk?"#1e293b":"#fff"}/><text x="60" y="58" textAnchor="middle" fill={dk?"#fff":"#111"} fontSize="13" fontWeight="bold">{total}</text><text x="60" y="72" textAnchor="middle" fill={dk?"#64748b":"#9ca3af"} fontSize="8">คน</text>
+          </svg>
+          <div className="space-y-3 flex-1">
+            {[{label:"ส่งแล้ว",val:sub,color:"#10b981"},{label:"ส่งช้า",val:late,color:"#f59e0b"},{label:"ไม่ส่ง",val:notS,color:"#ef4444"}].map(i=>{const pct=total?Math.round((i.val/total)*100):0;return(<div key={i.label}><div className="flex items-center justify-between mb-1"><div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full" style={{background:i.color}}/><span className={`text-xs ${dk?"text-slate-400":"text-gray-600"}`}>{i.label}</span></div><span className={`text-xs font-bold ${dk?"text-white":"text-gray-900"}`}>{i.val} ({pct}%)</span></div><div className={`h-1.5 rounded-full ${dk?"bg-slate-700":"bg-gray-100"} overflow-hidden`}><div className="h-full rounded-full" style={{width:`${pct}%`,background:i.color}}/></div></div>);})}
+          </div>
+        </div>
+      </div>
+      {roomAsgns.length>0&&(<div className={`rounded-2xl p-4 border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
+        <div className={`text-sm font-semibold mb-4 ${dk?"text-white":"text-gray-800"}`}>การส่งงานแต่ละชิ้น</div>
+        <div className="space-y-4">
+          {roomAsgns.map(a=>{const seed=a.id*7,subC=Math.max(0,Math.round(total*(0.6+(seed%30)/100))),lateC=Math.max(0,Math.round(total*(0.05+(seed%10)/100))),notC=Math.max(0,total-subC-lateC),tot2=subC+lateC+notC||1,sp=Math.round((subC/tot2)*100),lp=Math.round((lateC/tot2)*100),np=100-sp-lp;return(<div key={a.id}><div className="flex items-center justify-between mb-1.5"><div className={`text-xs font-medium truncate flex-1 mr-2 ${dk?"text-slate-300":"text-gray-700"}`}>{a.title}</div><span className={`text-xs font-bold ${sp+lp>=80?"text-emerald-500":sp+lp>=60?"text-amber-500":"text-red-500"}`}>{sp+lp}%</span></div><div className={`h-5 rounded-lg overflow-hidden flex ${dk?"bg-slate-700":"bg-gray-100"}`}>{sp>0&&<div className="h-full bg-emerald-500 flex items-center justify-center" style={{width:`${sp}%`}}>{sp>8&&<span className="text-white text-[10px] font-bold">{subC}</span>}</div>}{lp>0&&<div className="h-full bg-amber-400 flex items-center justify-center" style={{width:`${lp}%`}}>{lp>8&&<span className="text-white text-[10px] font-bold">{lateC}</span>}</div>}{np>0&&<div className="h-full bg-red-400 flex items-center justify-center" style={{width:`${np}%`}}>{np>8&&<span className="text-white text-[10px] font-bold">{notC}</span>}</div>}</div></div>);})}
+        </div>
+        <div className="flex gap-4 mt-3">{[{l:"ส่งแล้ว",c:"#10b981"},{l:"ส่งช้า",c:"#f59e0b"},{l:"ไม่ส่ง",c:"#ef4444"}].map(x=>(<div key={x.l} className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm" style={{background:x.c}}/><span className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>{x.l}</span></div>))}</div>
+      </div>)}
+      <div className={`rounded-2xl border overflow-hidden ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
+        <div className={`px-4 py-3 border-b flex items-center gap-2 ${dk?"border-slate-700/50":"border-gray-50"}`}><div className="w-2 h-2 rounded-full bg-red-500"/><span className={`text-sm font-semibold ${dk?"text-white":"text-gray-800"}`}>นักเรียนที่ไม่ส่งงาน ({notS} คน)</span></div>
+        {roomSt.filter(s=>s.status==="not_submitted").length===0?<div className={`p-6 text-center text-sm ${dk?"text-slate-500":"text-gray-400"}`}>🎉 ส่งงานครบทุกคน!</div>:roomSt.filter(s=>s.status==="not_submitted").map((s,idx,arr)=>(<div key={s.id} onClick={()=>{setViewMode("student");setSelStu(s.id);}} className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-all ${dk?"hover:bg-slate-700/40":"hover:bg-gray-50"} ${idx<arr.length-1?dk?"border-b border-slate-700/30":"border-b border-gray-50":""}`}><div className="w-7 h-7 rounded-full bg-red-500/15 text-red-500 flex items-center justify-center text-xs font-bold">{s.no}</div><div className={`flex-1 text-xs truncate ${dk?"text-slate-300":"text-gray-700"}`}>{s.name}</div><Ic n="arr" s={14} c={dk?"text-slate-600":"text-gray-300"}/></div>))}
+      </div>
+    </>)}
+
+    {viewMode==="student"&&(<>
+      <div className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border ${dk?"bg-slate-800 border-slate-700":"bg-white border-gray-200"}`}><Ic n="search" s={15} c={dk?"text-slate-500":"text-gray-400"}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="ค้นหาชื่อหรือเลขที่..." className={`flex-1 bg-transparent text-sm outline-none ${dk?"text-white placeholder-slate-500":"text-gray-900 placeholder-gray-400"}`}/></div>
+      <div className="space-y-2">
+        {filteredStu.map(s=>{const rt2=roomAsgns.length>0?Math.round(((s.submitCount+s.lateCount)/roomAsgns.length)*100):0;return(<button key={s.id} onClick={()=>setSelStu(s.id)} className={`w-full text-left rounded-2xl p-3 border active:scale-[0.99] ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">{s.no}</div>
+            <div className="flex-1 min-w-0"><div className={`text-sm font-medium truncate ${dk?"text-white":"text-gray-900"}`}>{s.name}</div><div className="flex gap-3 mt-1"><span className="text-[10px] text-emerald-500 font-medium">✓ {s.submitCount}</span><span className="text-[10px] text-amber-500 font-medium">⏱ {s.lateCount}</span><span className="text-[10px] text-red-400 font-medium">✗ {s.notCount}</span></div></div>
+            <div className="flex items-center gap-2"><span className={`text-sm font-bold ${rt2>=80?"text-emerald-500":rt2>=60?"text-amber-500":"text-red-500"}`}>{rt2}%</span><Ic n="arr" s={15} c={dk?"text-slate-600":"text-gray-300"}/></div>
+          </div>
+          {roomAsgns.length>0&&(<div className={`mt-2 h-1.5 rounded-full ${dk?"bg-slate-700":"bg-gray-100"} overflow-hidden flex`}><div className="h-full bg-emerald-500" style={{width:`${(s.submitCount/roomAsgns.length)*100}%`}}/><div className="h-full bg-amber-400" style={{width:`${(s.lateCount/roomAsgns.length)*100}%`}}/><div className="h-full bg-red-400" style={{width:`${(s.notCount/roomAsgns.length)*100}%`}}/></div>)}
+        </button>);})}
+      </div>
+    </>)}
+  </div>);
+}
+
+// ── SHARE ───────────────────────────────────────────────────────
+function SharePage({rooms,students,dk}){
+  const[showQR,setShowQR]=useState(false);
+  const[activeRoom,setActiveRoom]=useState(rooms[0]?.id);
+  const roomSt=students[activeRoom]||[];
+  const sub=roomSt.filter(s=>s.status!=="not_submitted").length;
+  const rate=roomSt.length?Math.round((sub/roomSt.length)*100):0;
+  return(<div className="p-4 space-y-5 pb-24 lg:pb-6">
+    <div className={`rounded-2xl p-4 border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
+      <div className={`text-xs font-semibold mb-3 uppercase tracking-wide ${dk?"text-slate-400":"text-gray-500"}`}>Preview การแชร์</div>
+      <div className="flex gap-2 mb-3 overflow-x-auto pb-1">{rooms.map(r=>(<button key={r.id} onClick={()=>setActiveRoom(r.id)} className="flex-shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all" style={activeRoom===r.id?{background:r.color,color:"white",borderColor:r.color}:{borderColor:dk?"#334155":"#e5e7eb",color:dk?"#94a3b8":"#6b7280"}}>{r.name}</button>))}</div>
+      <div className="rounded-2xl overflow-hidden border border-cyan-500/30"><div className="h-2 bg-gradient-to-r from-cyan-500 to-teal-400"/>
+        <div className="p-4 bg-gradient-to-br from-cyan-500/5 to-teal-500/5">
+          <div className="flex items-center gap-2 mb-3"><div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center"><Ic n="zap" s={16} c="text-white"/></div><div><div className={`text-xs font-bold ${dk?"text-white":"text-gray-900"}`}>AssignCheck Pro</div><div className={`text-xs ${dk?"text-slate-400":"text-gray-500"}`}>รายงานการส่งงาน</div></div></div>
+          <div className={`text-sm font-bold mb-1 ${dk?"text-white":"text-gray-900"}`}>{rooms.find(r=>r.id===activeRoom)?.name} · {rooms.find(r=>r.id===activeRoom)?.subject}</div>
+          <div className="flex gap-4 text-xs"><span className={dk?"text-slate-400":"text-gray-500"}>ส่งงาน {sub}/{roomSt.length} คน</span><span className={`font-bold ${rate>=80?"text-emerald-500":rate>=60?"text-amber-500":"text-red-500"}`}>{rate}%</span></div>
+          <div className={`mt-2 h-2 rounded-full ${dk?"bg-slate-700":"bg-gray-200"} overflow-hidden`}><div className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-teal-400" style={{width:`${rate}%`}}/></div>
+        </div>
+      </div>
+    </div>
+    <div className={`rounded-2xl p-4 border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
+      <div className={`text-sm font-semibold mb-4 ${dk?"text-white":"text-gray-800"}`}>แชร์ผ่าน</div>
+      <div className="grid grid-cols-4 gap-3">
+        {[{label:"LINE",color:"#00B900",bg:"#00B90015",icon:"share"},{label:"Facebook",color:"#1877F2",bg:"#1877F215",icon:"share"},{label:"Email",color:"#ea4335",bg:"#ea433515",icon:"mail"},{label:"QR Code",color:"#6366f1",bg:"#6366f115",icon:"copy",fn:()=>setShowQR(true)},{label:"Copy Link",color:"#06b6d4",bg:"#06b6d415",icon:"copy",fn:()=>toast("คัดลอกลิงก์แล้ว!","success")},{label:"PDF",color:"#10b981",bg:"#10b98115",icon:"dl"},{label:"CSV",color:"#f59e0b",bg:"#f59e0b15",icon:"dl"},{label:"Excel",color:"#22c55e",bg:"#22c55e15",icon:"dl"}].map(a=>(
+          <button key={a.label} onClick={a.fn||(()=>toast(`แชร์ผ่าน ${a.label}`,"success"))} className="flex flex-col items-center gap-2 p-3 rounded-2xl active:scale-95 transition-all" style={{background:a.bg}}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background:a.color+"22",color:a.color}}><Ic n={a.icon} s={20}/></div>
+            <span className={`text-xs font-medium ${dk?"text-slate-300":"text-gray-700"}`}>{a.label}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+    {showQR&&(<div className="fixed inset-0 z-50 flex items-end lg:items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={()=>setShowQR(false)}>
+      <div className={`w-full max-w-sm rounded-3xl p-6 text-center ${dk?"bg-slate-800":"bg-white"} shadow-2xl`} onClick={e=>e.stopPropagation()}>
+        <div className={`text-base font-bold mb-4 ${dk?"text-white":"text-gray-900"}`}>QR Code แชร์ผล</div>
+        <div className="w-48 h-48 mx-auto bg-white rounded-2xl p-3 shadow-lg mb-4">
+          <svg viewBox="0 0 100 100" className="w-full h-full">
+            {Array.from({length:10},(_,row)=>Array.from({length:10},(_,col)=>{const d=(row+col*3+row*col)%3!==0;return d?<rect key={`${row}-${col}`} x={col*10} y={row*10} width="10" height="10" fill="#0e7490"/>:null;}))}
+            <rect x="5" y="5" width="25" height="25" rx="3" fill="#0e7490"/><rect x="9" y="9" width="17" height="17" rx="2" fill="white"/><rect x="12" y="12" width="11" height="11" rx="1" fill="#0e7490"/>
+            <rect x="70" y="5" width="25" height="25" rx="3" fill="#0e7490"/><rect x="74" y="9" width="17" height="17" rx="2" fill="white"/><rect x="77" y="12" width="11" height="11" rx="1" fill="#0e7490"/>
+            <rect x="5" y="70" width="25" height="25" rx="3" fill="#0e7490"/><rect x="9" y="74" width="17" height="17" rx="2" fill="white"/><rect x="12" y="77" width="11" height="11" rx="1" fill="#0e7490"/>
+          </svg>
+        </div>
+        <div className={`text-xs mb-4 ${dk?"text-slate-400":"text-gray-500"}`}>สแกนเพื่อดูรายงานการส่งงาน</div>
+        <button onClick={()=>setShowQR(false)} className="w-full py-3 rounded-2xl bg-cyan-500 text-white font-medium">ปิด</button>
+      </div>
+    </div>)}
+  </div>);
+}
+
+// ── SETTINGS ────────────────────────────────────────────────────
+function SettingsPage({dk,toggleDk}){
+  const[notif,setNotif]=useState(true);
+  const[autoSave,setAutoSave]=useState(true);
+  function Toggle({on,toggle}){return(<button onClick={toggle} className={`w-12 h-6 rounded-full transition-all relative ${on?"bg-cyan-500":dk?"bg-slate-700":"bg-gray-200"}`}><div className={`w-5 h-5 rounded-full bg-white shadow-sm absolute top-0.5 transition-all ${on?"left-6":"left-0.5"}`}/></button>);}
+  return(<div className="p-4 space-y-5 pb-24 lg:pb-6">
+    <div className={`rounded-2xl p-4 border ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
+      <div className="flex items-center gap-4">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-cyan-500/30">ธ</div>
+        <div><div className={`font-bold ${dk?"text-white":"text-gray-900"}`}>นายธนกฤต</div><div className={`text-sm ${dk?"text-slate-400":"text-gray-500"}`}>ครูคณิตศาสตร์</div><div className={`text-xs mt-1 ${dk?"text-slate-500":"text-gray-400"}`}>โรงเรียนหล่มสักวิทยาคม · สพม.เพชรบูรณ์</div></div>
+      </div>
+    </div>
+    {[{title:"ทั่วไป",items:[{label:"Dark Mode",sub:"โหมดมืด",el:<Toggle on={dk} toggle={toggleDk}/>},{label:"Auto Save",sub:"บันทึกอัตโนมัติ",el:<Toggle on={autoSave} toggle={()=>setAutoSave(p=>!p)}/>}]},{title:"การแจ้งเตือน",items:[{label:"Push Notification",sub:"แจ้งเตือนบนมือถือ",el:<Toggle on={notif} toggle={()=>setNotif(p=>!p)}/>}]},{title:"แอปพลิเคชัน",items:[{label:"Version",sub:"AssignCheck Pro 1.0.0",el:<span className={`text-xs ${dk?"text-slate-500":"text-gray-400"}`}>v1.0.0</span>}]}].map(sec=>(
+      <div key={sec.title} className={`rounded-2xl border overflow-hidden ${dk?"bg-slate-800/60 border-slate-700/50":"bg-white border-gray-100"} shadow-sm`}>
+        <div className={`px-4 py-3 border-b text-xs font-semibold uppercase tracking-wider ${dk?"border-slate-700/50 text-slate-400":"border-gray-50 text-gray-400"}`}>{sec.title}</div>
+        {sec.items.map((item,idx)=>(<div key={idx} className={`flex items-center justify-between px-4 py-3.5 ${idx<sec.items.length-1?dk?"border-b border-slate-700/30":"border-b border-gray-50":""}`}><div><div className={`text-sm font-medium ${dk?"text-white":"text-gray-900"}`}>{item.label}</div><div className={`text-xs ${dk?"text-slate-500":"text-gray-400"}`}>{item.sub}</div></div>{item.el}</div>))}
+      </div>
+    ))}
+  </div>);
+}
+
+// ── APP ─────────────────────────────────────────────────────────
+function App(){
+  const[dk,setDk]=useState(false);
+  const[page,setPage]=useState("dashboard");
+  const[rooms,setRooms]=useState(INIT_ROOMS);
+  const[students,setStudents]=useState(INIT_STUDENTS);
+  const[asgns,setAsgns]=useState(INIT_ASGNS);
+  const[fabTrigger,setFabTrigger]=useState(0);
+  const titles={dashboard:"Dashboard",classroom:"ห้องเรียน",assignment:"เช็คงาน",reports:"รายงาน",share:"แชร์ & ส่งออก",settings:"ตั้งค่า"};
+  const pages={
+    dashboard:<DashboardPage rooms={rooms} asgns={asgns} students={students} dk={dk} setPage={setPage}/>,
+    classroom:<ClassroomPage rooms={rooms} setRooms={setRooms} students={students} dk={dk}/>,
+    assignment:<AssignmentPage rooms={rooms} asgns={asgns} setAsgns={setAsgns} students={students} setStudents={setStudents} dk={dk} fabTrigger={fabTrigger}/>,
+    reports:<ReportsPage rooms={rooms} students={students} asgns={asgns} dk={dk}/>,
+    share:<SharePage rooms={rooms} students={students} dk={dk}/>,
+    settings:<SettingsPage dk={dk} toggleDk={()=>setDk(p=>!p)}/>,
+  };
+  return(<div className={`${dk?"dark bg-slate-950":"bg-gray-50"} h-screen overflow-hidden`} style={{fontFamily:"'Prompt',sans-serif"}}>
+    <ToastHost/>
+    <div className="flex h-full">
+      <Sidebar page={page} setPage={setPage} dk={dk}/>
+      <main className={`flex-1 flex flex-col min-w-0 overflow-hidden ${dk?"bg-slate-950":"bg-gray-50"}`}>
+        <Header title={titles[page]} dk={dk} toggleDk={()=>setDk(p=>!p)}/>
+        <div className="flex-1 overflow-y-auto overscroll-contain">{pages[page]}</div>
+      </main>
+    </div>
+    <BNav page={page} setPage={setPage} dk={dk}/>
+    <button onClick={()=>{setPage("assignment");setFabTrigger(p=>p+1);}} className="fixed right-4 bottom-20 lg:bottom-6 z-40 w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-500 shadow-xl shadow-cyan-500/40 flex items-center justify-center transition-all active:scale-90 hover:scale-110" title="เพิ่มงานใหม่"><Ic n="plus" s={24} c="text-white"/></button>
+  </div>);
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
