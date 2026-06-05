@@ -22,11 +22,7 @@ body {
     background-color: var(--background);
     color: var(--text-color);
     min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
     padding: 24px 16px;
-    overflow-x: hidden;
     position: relative;
 }
 
@@ -66,8 +62,9 @@ body {
 .container {
     width: 100%;
     max-width: 580px;
-    margin: auto;
+    margin: 0 auto;
     z-index: 10;
+    position: relative;
 }
 
 .glass-panel {
@@ -432,6 +429,7 @@ p {
 /* ========================= */
 /* Tasks Section (Grouped)   */
 /* ========================= */
+
 .task-header {
     display: flex;
     justify-content: space-between;
@@ -460,9 +458,6 @@ p {
     display: flex;
     flex-direction: column;
     gap: 14px;
-    max-height: 65vh;
-    overflow-y: auto;
-    padding-right: 4px;
 }
 
 /* Subject Group — collapsible card */
@@ -658,7 +653,6 @@ p {
 @media (max-width: 480px) {
     body {
         padding: 16px 12px;
-        align-items: flex-start;
     }
 
     .glass-panel {
@@ -676,10 +670,6 @@ p {
 
     .task-header {
         flex-wrap: wrap;
-    }
-
-    .tasks-list {
-        max-height: 60vh;
     }
 
     .summary-bar {
